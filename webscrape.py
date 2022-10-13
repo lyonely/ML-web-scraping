@@ -1,4 +1,3 @@
-
 from selenium import webdriver
 import json
 from bs4 import BeautifulSoup
@@ -24,6 +23,17 @@ for row in rows:
 
 nutrition_json = json.dumps(macros_value, indent=4)
 
-print(nutrition_json)
+json_object = json.dumps({
+    "url": url,
+    "tag1": 'table',
+    "tag2": 'tr',
+    "tag3": 'td',
+    "health": macros_value,
+})
+
+query = json.loads(json_object)
+
+print(query["health"]["Energy"])
 
 driver.quit()
+
