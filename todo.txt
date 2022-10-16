@@ -1,0 +1,9 @@
+TODO:
+- Works with Tesco
+    - submit a url, it'll get the nutritional details
+    - work on automating this using a crawler
+- might use an api approach instead (tried, but didn't work for me)
+- how to scrape dynamically loaded pages
+- contact nuri on your own time
+- how to store training data
+    - communicate with @Nico31415 on the database structure
