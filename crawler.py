@@ -7,8 +7,8 @@ to_crawl = set()
 visited = list()
 product_links = set()
 
-def get_links(max_links):
 
+def get_links(max_links):
     while len(to_crawl) > 0 and len(product_links) < max_links:
         url = to_crawl.pop()
         print(url + " is being searched")
@@ -30,7 +30,6 @@ def get_links(max_links):
                 if not l in visited:
                     to_crawl.add(l)
                     visited.append(l)
-
         except:
             pass
     return product_links

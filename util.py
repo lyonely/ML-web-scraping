@@ -1,11 +1,17 @@
+import time
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+
 
 def get_soup(url):
     try:
         driver = webdriver.Chrome(service=Service('./drivers/chromedriver'))
         driver.get(url)
+        if "sainsbury" in url:
+            time.sleep(8)
+
         page = driver.page_source
         soup = BeautifulSoup(page, 'lxml')
         driver.quit()
