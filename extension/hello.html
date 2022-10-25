@@ -1,14 +1,26 @@
 <html>
-
+<head>
+    <link rel="stylesheet" href="hello.css">
+</head>
 <body>
     <h1>Hello Extensions of the world</h1>
-    <script src="popup.js"></script>
     <form>
-        <label for="fname">First name:</label><br>
+        <label for="fname">Labels:</label><br><br>
         <input type="text" id="fname" name="fname"><br>
-        <label for="lname">Last name:</label><br>
-        <input type="text" id="lname" name="lname">
     </form>
+
+    <label for="minmax">Choose min/max:</label><br><br>
+    <select name="minmax" id="minmax">
+      <option value="min">Minimize</option>
+      <option value="max">Maximize</option>
+    </select>
+    <br><br>
+
+    <script src="popup.js"></script>
 </body>
 
+
+
 </html>
+
+

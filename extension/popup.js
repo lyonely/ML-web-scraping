@@ -1,6 +1,6 @@
 let btn = document.createElement("button");
 
-btn.innerHTML = "Subscribe";
+btn.innerHTML = "Go";
 
 btn.onclick = function () {
     window.open('https://www.palantir.com/');
