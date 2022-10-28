@@ -1,0 +1,6 @@
+TODO:
+- increase accuracy of q/a answer (fine tuning)
+- research heuristics for improved answers
+- check how it works on other product searches / companies
+- make python flask api endpoint
+- check licensing for qa model
