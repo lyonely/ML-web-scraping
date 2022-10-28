@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web:
+    build:
+      args:
+        port: 5000
+      dockerfile: ./Dockerfile
+    ports:
+      - 5000:5000
