@@ -1,22 +1,18 @@
 from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 
 
-def get_soup(url):
+def get_soup(driver, url):
     """Scrapes the web"""
-    driver = webdriver.Chrome(service=Service('./drivers/chromedriver'))
     try:
         driver.get(url)
         page = driver.page_source
-        soup = BeautifulSoup(page, 'lxml')
+        soup = BeautifulSoup(page, 'html.parser')
         return soup
     except HTTPError:
         print("Error with: " + url)
     except URLError:
         print("Error with: " + url)
-    finally:
-        driver.quit()
 
     return None
+
