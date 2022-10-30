@@ -2,10 +2,10 @@ import json
 import sys
 import os
 from typing import List
-from webscraper import get_soup
-from macro_nlp import product_macro
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from backend.webscraper import get_soup
+from backend.macro_nlp import product_macro
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
