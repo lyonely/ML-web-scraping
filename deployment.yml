@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: backend-app
-        image: europe-west3-docker.pkg.dev/ml-web-scraping-367112/ml-web-scraping/backend-app:v2
+        image: europe-west3-docker.pkg.dev/ml-web-scraping-367112/ml-web-scraping/backend-app:v3
         resources:
           requests:
             cpu: 100m
