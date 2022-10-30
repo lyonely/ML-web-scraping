@@ -1,14 +1,15 @@
 import collections
 import re
+from typing import Dict, List
 from transformers import pipeline
 question_answerer = pipeline("question-answering", model="deepset/roberta-base-squad2")
 # q/a pipeline set up with the "deepset/roberta-base-squad2" model
 # https://huggingface.co/deepset/roberta-base-squad2
 
-
-def product_macro(tags: [str], macro: str):
-    # get all tags of soup
-    results: {str: int} = {}
+#pylint: disable-next=too-many-locals
+def product_macro(tags: List[str], macro: str):
+    """ get all tags of soup """
+    results: Dict[str, int] = {}
 
     question = "What is " + macro + " in grams?"
 
@@ -36,10 +37,10 @@ def product_macro(tags: [str], macro: str):
     # answer_sum_confidences represents the answer with the highest sum of confidences
     max_value = 0
     answer_sum_confidences = ""
-    for k, v in results.items():
-        if max_value < v:
-            max_value = v
-            answer_sum_confidences = k
+    for key, value in results.items():
+        if max_value < value:
+            max_value = value
+            answer_sum_confidences = key
 
     # heuristic to check if answers from above are consistent with
     # each other as the most common answer provided by the algorithm
@@ -49,17 +50,16 @@ def product_macro(tags: [str], macro: str):
     match = re.search(r"[0-9][0-9]*.?[0-9]?g", final_answer)
     if match:
         return match.group()
-    else:
-        return correction(results)
+    return correction(results)
 
 
 # this method is very hacky, and it won't work on the edge case where there is no mass in the
 # results table as is the case with "https://www.tesco.com/groceries/en-GB/products/268414699"
-def correction(results: {str: int}):
-    for k, v in results.items():
+def correction(results: Dict[str, int]):
+    """ correction method """
+    for k, _ in results.items():
         match = re.search(r"[0-9][0-9]*.?[0-9]?g", k)
         if match:
             return match.group()
 
     return ""
-

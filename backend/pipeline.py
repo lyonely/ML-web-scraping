@@ -1,10 +1,11 @@
 import json
 import sys
+import os
+from typing import List
 from webscraper import get_soup
 from macro_nlp import product_macro
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
@@ -26,8 +27,8 @@ def products_to_macro_json(driver, url: str, macro: str):
 
     product_to_macro = {}
     for product in products_url:
-        gs = get_soup(driver, product).find_all()
-        tags: [str] = [str(tag).strip().lower() for tag in gs]
+        soup = get_soup(driver, product).find_all()
+        tags: List[str] = [str(tag).strip().lower() for tag in soup]
         macro = str(macro).strip().lower()
 
         answer = product_macro(tags, macro)
@@ -54,6 +55,8 @@ def main(url, macro):
         res = products_to_macro_json(driver, url, macro)
     finally:
         driver.quit()
+
+    return res
     # send res to database
     # send_to_database(res)
 
