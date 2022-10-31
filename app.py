@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -6,6 +7,7 @@ from backend.pipeline import main
 app = Flask(__name__)
 CORS(app)
 
+logging.critical("Flask app started running")
 
 @app.route("/")
 def health():
