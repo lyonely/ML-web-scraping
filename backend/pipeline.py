@@ -3,7 +3,6 @@ import sys
 import os
 from typing import List
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from backend.webscraper import get_soup
 from backend.macro_nlp import product_macro
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -50,7 +49,12 @@ def products_to_macro_json(driver, url: str, macro: str):
 
 def main(url, macro):
     """ Find the product and its relevant macro information and stores it in a database """
-    driver = webdriver.Chrome(service=Service('drivers/chromedriver'))
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
     try:
         res = products_to_macro_json(driver, url, macro)
     finally:
