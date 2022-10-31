@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 import os
 from typing import List
@@ -8,10 +9,11 @@ from backend.macro_nlp import product_macro
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-
 def products_to_macro_json(driver, url: str, macro: str):
     """ Retrieves products and their relevant macro information """
     soup = get_soup(driver, url)
+    logging.critical("Soup value below")
+    logging.critical(soup)
     products_url = set()
 
     try:
@@ -23,7 +25,7 @@ def products_to_macro_json(driver, url: str, macro: str):
 
     except Exception as exc:
         raise Exception("Error while reading CSS selector") from exc
-
+    logging.critical(products_url)
     product_to_macro = {}
     for product in products_url:
         soup = get_soup(driver, product).find_all()
