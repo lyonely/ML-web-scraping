@@ -44,5 +44,6 @@ jobs:
         with:
           push: true
           tags: |
+             gcloud auth configure-docker europe-west3-docker.pkg.dev
              europe-west3-docker.pkg.dev/ml-web-scraping-367112/ml-web-scraping/backend-app:${{ steps.get-tag.outputs.short_ref }}
              europe-west3-docker.pkg.dev/ml-web-scraping-367112/ml-web-scraping/backend-app:latest
