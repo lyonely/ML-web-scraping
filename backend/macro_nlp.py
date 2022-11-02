@@ -2,9 +2,13 @@ import collections
 import re
 from typing import Dict, List
 from transformers import pipeline
-question_answerer = pipeline("question-answering", model="deepset/roberta-base-squad2")
+
+question_answerer = pipeline("question-answering",
+                             model="deepset/roberta-base-squad2")
+
 # q/a pipeline set up with the "deepset/roberta-base-squad2" model
 # https://huggingface.co/deepset/roberta-base-squad2
+
 
 #pylint: disable-next=too-many-locals
 def product_macro(tags: List[str], macro: str):
@@ -30,7 +34,8 @@ def product_macro(tags: List[str], macro: str):
                 results[result["answer"]] += result["score"]
 
             if result["score"] > max_confidence:
-                (max_answer, max_confidence) = (result["answer"], result["score"])
+                (max_answer, max_confidence) = (result["answer"],
+                                                result["score"])
 
     answer_common = collections.Counter(answer_list).most_common(1)[0][0]
 

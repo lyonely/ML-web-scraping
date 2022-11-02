@@ -2,23 +2,25 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 
-from backend.pipeline import main
+import backend.pipeline
 
+logging.basicConfig(filename='record.log', level=logging.DEBUG)
 app = Flask(__name__)
 CORS(app)
 
-logging.critical("Flask app started running")
 
 @app.route("/")
 def health():
     """Used to test if the app is running"""
-    return "Hello World"
+    return "hello world"
 
 
 @app.route('/macro', methods=['POST', 'GET'])
 def login():
     """Takes a POST request with 'url' and 'macro' fields and returns the relevant information"""
     if request.method == 'POST':
-        if request.form['url'] and request.form['macro']:
-            return main(request.form['url'], request.form['macro'])
+        request_data = request.get_json()
+        return backend.pipeline.main(request_data['url'],
+                                     request_data['macro'],
+                                     request_data['requested_amt'])
     return "Error: received GET request instead of POST request"
