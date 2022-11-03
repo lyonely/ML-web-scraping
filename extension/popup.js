@@ -27,23 +27,24 @@ btn.onclick = function () {
     const data = {
       url: tab.url,
       macro: label,
-      requested_amt: "3"
+      requested_amt: 3
     }
-    
-    fetch('http://35.198.85.60/macro', {
-      method: 'POST',
+
+  fetch('http://35.198.85.60/macro', {
+    method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
       headers: {
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       }
       })
-      .then(function(response){ 
+      .then(function(response){
+        console.log(response)
       return response.json()})
       .then(function(data)
       {console.log(data)
       body=document.getElementById("bd")
-      body.innerHTML = data  
-    }).catch(error => console.error('Error:', error)); 
+      body.innerHTML = data
+    }).catch(error => console.error('Error:', error));
 
 };

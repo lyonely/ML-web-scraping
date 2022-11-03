@@ -10,5 +10,11 @@
     "background": {
         "service_worker": "background.js"
     },
-    "permissions": ["tabs", "activeTab", "<all_urls>"]
+    "host_permissions": [
+        "*://*/*"
+    ],
+    "permissions": [
+        "tabs",
+        "activeTab"
+    ]
 }
