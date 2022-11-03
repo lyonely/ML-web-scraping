@@ -2,42 +2,48 @@ let btn = document.createElement("button");
 
 btn.innerHTML = "Go";
 
-const tab = "";
+var tab = "";
 
 var label;
 
 
+document.body.appendChild(btn);
+
+var get = fetch('http://35.198.85.60/macro');
+
+console.log(get)
 
 btn.onclick = function () {
 
     var form = document.getElementById("form")
-    label = document.getElementById("fname")
+    label = document.getElementById("fname").value
 
     chrome.tabs.query({active:true}, tabs=>{
         tab=tabs[0];
-        alert("The URL of this page is:  " + tab.url + ". The label is: ") + label;
+        alert("The URL of this page is:  " + tab.url + ". The label is: " + label);
       }
     )
 
+    const data = {
+      url: tab.url,
+      macro: label,
+      requested_amt: "3"
+    }
+    
+    fetch('http://35.198.85.60/macro', {
+      method: 'POST',
+      mode: 'cors',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-type': 'application/json',
+      }
+      })
+      .then(function(response){ 
+      return response.json()})
+      .then(function(data)
+      {console.log(data)
+      body=document.getElementById("bd")
+      body.innerHTML = data  
+    }).catch(error => console.error('Error:', error)); 
+
 };
-
-fetch('http://35.198.85.60/macro', {
-  method: 'POST',
-  body: JSON.stringify({
-    url:tab.url,
-    macro:label,
-
-  }),
-  headers: {
-    'Content-type': 'application/json; charset=UTF-8',
-  }
-  })
-  .then(function(response){ 
-  return response.json()})
-  .then(function(data)
-  {console.log(data)
-  body=document.getElementById("bd")
-  body.innerHTML = data  
-}).catch(error => console.error('Error:', error)); 
-
-document.body.appendChild(btn);
