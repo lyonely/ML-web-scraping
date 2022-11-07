@@ -1,12 +1,10 @@
-import logging
 from flask import Flask, request
 from flask_cors import CORS
 
 import backend.pipeline
 
-logging.basicConfig(filename='record.log', level=logging.DEBUG)
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 
 @app.route("/")
