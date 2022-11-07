@@ -27,7 +27,7 @@ btn.onclick = function () {
     const data = {
       url: tab.url,
       macro: label,
-      requested_amt: 3
+      requested_amt: 1
     }
 
   fetch('http://35.198.85.60/macro', {
