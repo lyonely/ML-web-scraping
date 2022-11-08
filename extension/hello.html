@@ -2,19 +2,28 @@
 <head>
     <!--<link rel="stylesheet" href="hello.css">!-->
 </head>
-<body>
+<body style="background: rgba(255, 255, 255, 0.3); width: 300px">
     <h1>SWE Project</h1>
-    <form id="form" method="post">
-        <label for="fname">Labels:</label><br><br>
-        <input type="text" id="fname" name="fname"><br>
-    </form>
+    <div style="background-color: ghostwhite; font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
+        <form id="form" method="post">
+            <label for="fname">Enter A Question:</label><br><br>
+            <input type="text" id="fname" name="fname"><br>
+        </form>
+    </div>
 
+    <br><br>
+
+
+    <div style="background-color: ghostwhite; font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
+            <label for="fname">Recommended Questions:</label><br><br>
+    </div>
+<!-- 
     <label for="minmax">Choose min/max:</label><br><br>
     <select name="minmax" id="minmax">
       <option value="min">Minimize</option>
       <option value="max">Maximize</option>
     </select>
-    <br><br>
+    <br><br> -->
     <p id="bd"></p>
     <script src="popup.js"></script>
 </body>
