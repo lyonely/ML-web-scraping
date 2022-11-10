@@ -1,0 +1,21 @@
+name: Check Docker Build
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  docker-build:
+    name: Test docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: docker build -t flask_backend .
+
+      - name: Run docker image
+        run: docker run -d -p 5000:5000 flask_backend
