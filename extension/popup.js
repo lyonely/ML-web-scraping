@@ -1,11 +1,12 @@
 let btn = document.createElement("button");
 
 btn.innerHTML = "Go";
+btn.id = "x"
+
+// btn.style.background = "#3dfe3a";
 
 var tab = "";
-
 var label;
-
 
 document.body.appendChild(btn);
 
@@ -18,11 +19,13 @@ btn.onclick = function () {
     var form = document.getElementById("form")
     label = document.getElementById("fname").value
 
-    chrome.tabs.query({active:true}, tabs=>{
-        tab=tabs[0];
-        alert("The URL of this page is:  " + tab.url + ". The label is: " + label);
-      }
-    )
+    // chrome.tabs.query({active:true}, tabs=>{
+    //     tab=tabs[0];
+    //     alert("The URL of this page is:  " + tab.url + ". The label is: " + label);
+    //   }
+    // )
+    
+    location.href = 'loadingPage.html'
 
     const data = {
       url: tab.url,
@@ -48,3 +51,4 @@ btn.onclick = function () {
     }).catch(error => console.error('Error:', error));
 
 };
+
