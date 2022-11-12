@@ -1,80 +1,83 @@
-import json
 import sys
 import os
-from typing import List
+
+from urllib.parse import urlparse
 from selenium import webdriver
-#pylint: disable-next=unused-import, import-error
-import chromedriver_binary
+from selenium.webdriver.chrome.service import Service
 from backend.webscraper import get_soup
 from backend.macro_nlp import product_macro
+from backend.db_connection import *
 
+# pylint: disable-next=unused-import, import-error
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+DRIVER = webdriver.Chrome(service=Service("./backend/drivers/chromedriver"))
+URL = ""
+KEYWORD = ""
+MAX_AMT = 0
 
-def products_to_macro_json(driver, url: str, macro: str, requested_amt: int):
+def get_product_urls():
     """ Retrieves products and their relevant macro information """
-    soup = get_soup(driver, url)
-    products_url = []
+    soup = get_soup(DRIVER, URL)
+    domain = urlparse(URL).netloc
+    products = set()
     try:
-        links = soup.select('a')
+        links = set(soup.select('a'))
         for link in links:
-            to_scrape = 'https://www.tesco.com' + str(link.get('href'))
+            if len(products) == MAX_AMT:
+                break
+            to_scrape = "https://" + str(domain) + str(link.get('href'))
             if '/products/' in to_scrape:
-                products_url.append(to_scrape)
+                products.add(to_scrape)
 
     except Exception as exc:
         raise Exception("Error while reading CSS selector") from exc
 
-    product_to_macro = {}
-    for product in products_url:
-        soup = get_soup(driver, product).find_all()
-        tags: List[str] = [str(tag).strip().lower() for tag in soup]
-        macro = str(macro).strip().lower()
-
-        answer = product_macro(tags, macro)
-        product_to_macro[product] = answer
-
-        if len(product_to_macro) == requested_amt:
-            break
-
-    json_object = json.dumps({
-        "search_query": url,
-        "products_to_macro": product_to_macro
-    })
-
-    return json_object
-
-
-# pylint: disable-next=fixme
-# TODO: Create function to send results to database
-# def send_to_database(json_result):
-#     pass
-
-
-def main(url, macro, requested_amt):
-    """ Find the product and its relevant macro information and stores it in a database """
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("window-size=1400,2100")
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
-        (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-    chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
-
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-
-    try:
-        res = products_to_macro_json(driver, url, macro, int(requested_amt))
     finally:
-        driver.quit()
+        return products
 
-    return res
-    # send res to database
-    # send_to_database(res)
+
+def products_to_macro_json(products: set):
+    product_to_macro = {}
+
+    while len(products) > 0:
+        product = products.pop()
+        try:
+            soup = get_soup(DRIVER, product).find_all()
+            tags = [str(tag).strip().lower() for tag in soup]
+            answer = product_macro(tags, str(KEYWORD).strip().lower())
+            product_to_macro[product] = answer
+        except Exception:
+            continue
+
+    return {"search_query": URL, "products_to_macro": product_to_macro}
+
+
+def main(url, keyword, amount):
+    """ Find the product and its relevant macro information and stores it in a database """
+    global URL, KEYWORD, MAX_AMT
+    URL = str(url)
+
+    """ Find result in MongoDB / Cached """
+    cached_result = get_result(URL)
+    if cached_result is not None:
+        DRIVER.quit()
+        return cached_result
+
+    """ If not in DB, run through algorithm. """
+    KEYWORD = keyword
+    MAX_AMT = int(amount)
+    res = {}
+    try:
+        product_urls = get_product_urls()
+        res = products_to_macro_json(product_urls)
+        return res
+    except Exception or FloatingPointError:
+        pass
+    finally:
+        DRIVER.quit()
+        send_json_to_database(res)
 
 
 if __name__ == "__main__":
-    main(sys.argv[0], sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

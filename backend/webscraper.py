@@ -7,15 +7,8 @@ def get_soup(driver, url):
     """Scrapes the web"""
     try:
         driver.get(url)
-
-        time.sleep(20)
-
         page = driver.page_source
-
-        assert "No results found." not in page
-
-        soup = BeautifulSoup(page, 'html.parser')
-        return soup
+        return BeautifulSoup(page, 'html.parser')
     except HTTPError:
         print("Error with: " + url)
     except URLError:
