@@ -3,27 +3,26 @@
     <!--<link rel="stylesheet" href="hello.css">!-->
 </head>
 <body style="background: rgba(255, 255, 255, 0.3); width: 300px">
-    <h1>SWE Project</h1>
-    <div style="background-color: ghostwhite; font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
+    <h1 style="position: relative; left: 30%; font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;">Scrape.ai</h1>
+    <div style="background-color: rgba(238, 244, 212); font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
         <form id="form" method="post">
             <label for="fname">Enter A Question:</label><br><br>
-            <input type="text" id="fname" name="fname"><br>
+            <input type="text" id="fname" name="fname" size="35"><br>
+            <br><br>
+            <label for="fname" style="font-size: 12px; font-style: italic;">Example Question- What is the fat content?</label>
         </form>
     </div>
 
-    <br><br>
+    <br>
 
-
-    <div style="background-color: ghostwhite; font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
-            <label for="fname">Recommended Questions:</label><br><br>
+    <div style="background-color: rgba(238, 244, 212); padding: 20px; margin: 5px; border-radius: 15px;">
+            <label style="font-size: 15px;" for="fname">Our Product:</label><br><br>
+            <img src="/icons/icon1.png" style="width: 15px; margin-top: 5px;">
+            <label for="fname" style="font-size: 12px;">Scrape quick information about the product</label><br><br>
+            <img src="/icons/icon2.png" style="width: 15px; margin-top: 5px;">
+            <label for="fname">Save time scrolling</label><br>
     </div>
-<!-- 
-    <label for="minmax">Choose min/max:</label><br><br>
-    <select name="minmax" id="minmax">
-      <option value="min">Minimize</option>
-      <option value="max">Maximize</option>
-    </select>
-    <br><br> -->
+
     <p id="bd"></p>
     <script src="popup.js"></script>
 </body>
