@@ -14,27 +14,26 @@ def product_macro(tags: List[str], macro: str):
     """ get all tags of soup """
     results: Dict[str, int] = {}
 
-    question = "What is the " + macro + "?"
+    question = "What is the " + macro + " in grams?"
 
     # max_answer represents the answer with the highest confidence
     (max_answer, max_confidence) = ("", 0)
     # answer list will be used to find the most commonly produced answer by qa model
     answer_list = []
+    tags = [tag for tag in tags if macro in tag and len(tag) < 400]
+
     for tag in tags:
-        if macro in tag and 40 < len(tag) < 500:
-            index = tag.index(macro)
-            context = tag[index:(index + 30)]
-            result = question_answerer(question=question, context=context)
+        result = question_answerer(question=question, context=tag)
 
-            answer_list.append(result["answer"])
-            if result["answer"] not in results:
-                results[result["answer"]] = result["score"]
-            else:
-                results[result["answer"]] += result["score"]
+        answer_list.append(result["answer"])
+        if result["answer"] not in results:
+            results[result["answer"]] = result["score"] / (len(tag)+1)
+        else:
+            results[result["answer"]] += result["score"] / (len(tag)+1)
 
-            if result["score"] > max_confidence:
-                (max_answer, max_confidence) = (result["answer"],
-                                                result["score"])
+        if result["score"] > max_confidence:
+            (max_answer, max_confidence) = (result["answer"],
+                                            result["score"])
     answer_common = ""
     if len(answer_list) != 0:
         answer_common = collections.Counter(answer_list).most_common(1)[0][0]
@@ -51,7 +50,7 @@ def product_macro(tags: List[str], macro: str):
     # each other as the most common answer provided by the algorithm
     answers = [max_answer, answer_common, answer_sum_confidences]
     final_answer = collections.Counter(answers).most_common(1)[0][0]
-    match = re.search(r"[0-9][0-9]*.?[0-9]?", final_answer)
+    match = re.search(r"[0-9][0-9]*.?[0-9]*", answer_sum_confidences)
 
     if match:
         return match.group()
@@ -63,7 +62,7 @@ def product_macro(tags: List[str], macro: str):
 def correction(answers: List):
     """ correction method """
     for answer in answers:
-        match = re.search(r"[0-9][0-9]*.?[0-9]?", answer)
+        match = re.search(r"[0-9][0-9]*.?[0-9]*", answer)
         if match:
             return match.group()
 

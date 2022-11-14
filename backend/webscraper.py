@@ -3,7 +3,7 @@ from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
 
 
-def get_soup(driver, url):
+def soup(driver, url):
     """Scrapes the web"""
     try:
         driver.get(url)
@@ -15,3 +15,7 @@ def get_soup(driver, url):
         print("Error with: " + url)
 
     return None
+
+
+def soup_without_driver(html: str):
+    return BeautifulSoup(html, 'html.parser')
