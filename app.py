@@ -19,6 +19,5 @@ def login():
     if request.method == 'POST':
         request_data = request.get_json()
         return backend.pipeline.main(request_data['url'],
-                                     request_data['macro'],
-                                     request_data['requested_amt'])
+                                     request_data['macro'])
     return "Error: received GET request instead of POST request"
