@@ -22,10 +22,20 @@ def db_send(data: dict, collection: str):
 
 def db_products_to_keyword(url: str, keyword: str):
     """ Retrieves object associated with url and keyword"""
-    return ml_results.find_one({"search_query": url, "keyword": keyword}, \
+    result = ml_results.find_one({"search_query": url, "keyword": keyword}, \
         {"products_to_keyword": 1})
+
+    if result:
+        result.pop('_id', None)
+
+    return result
 
 
 def db_product_urls(url: str):
     """ Retrieves object associated with url"""
-    return urls.find_one({"url": url}, {"products": 1})
+    result = urls.find_one({"url": url}, {"products": 1})
+
+    if result:
+        result.pop('_id', None)
+
+    return result
