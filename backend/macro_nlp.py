@@ -3,6 +3,11 @@ import re
 from typing import Dict, List
 from transformers import pipeline
 
+from rake_nltk import Rake
+import nltk 
+import itertools
+
+
 question_answerer = pipeline("question-answering",
                              model="deepset/roberta-base-squad2")
 
@@ -10,12 +15,19 @@ question_answerer = pipeline("question-answering",
 # https://huggingface.co/deepset/roberta-base-squad2
 
 
+def get_keywords(question: str, n: int) -> List[str]:
+    #returns top n key words form the question
+    r = Rake()
+    r.extract_keywords_from_text(question)
+    return list(itertools.chain.from_iterable(map(lambda x : x.split(), r.get_ranked_phrases())))[:n]
+
+
 #pylint: disable-next=too-many-locals
-def product_macro(tags: List[str], macro: str):
+def product_question(tags: List[str], question: str):
     """ get all tags of soup """
     results: Dict[str, int] = {}
 
-    question = "What is " + macro + " in grams?"
+    question_key_words = get_keywords(question, 5)
 
     # max_answer represents the answer with the highest confidence
     (max_answer, max_confidence) = ("", 0)
@@ -23,7 +35,7 @@ def product_macro(tags: List[str], macro: str):
     answer_list = []
 
     for tag in tags:
-        if macro in tag and 40 < len(tag) < 1000:
+        if any(key_word in tag for key_word in question_key_words) and 40 < len(tag) < 1000:
             result = question_answerer(question=question, context=tag)
             # result = { "answer": ..., "score": ..., ... }
 
