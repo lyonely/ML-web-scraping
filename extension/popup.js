@@ -46,8 +46,7 @@ btn.onclick = function () {
       return response.json()})
       .then(function(data)
       {console.log(data)
-      body=document.getElementById("bd")
-      body.innerHTML = data
+      document.write(data)
     }).catch(error => console.error('Error:', error));
 
 };
