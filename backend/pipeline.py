@@ -6,12 +6,12 @@ from selenium import webdriver
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
 from backend.webscraper import get_soup
-from backend.macro_nlp import product_macro
+from backend.macro_nlp import product_question
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-def products_to_macro_json(driver, url: str, macro: str, requested_amt: int):
+def products_to_question_json(driver, url: str, question: str, requested_amt: int):
     """ Retrieves products and their relevant macro information """
     soup = get_soup(driver, url)
     products_url = []
@@ -25,21 +25,21 @@ def products_to_macro_json(driver, url: str, macro: str, requested_amt: int):
     except Exception as exc:
         raise Exception("Error while reading CSS selector") from exc
 
-    product_to_macro = {}
+    product_to_question = {}
     for product in products_url:
         soup = get_soup(driver, product).find_all()
         tags: List[str] = [str(tag).strip().lower() for tag in soup]
-        macro = str(macro).strip().lower()
+        question = str(question).strip().lower()
 
-        answer = product_macro(tags, macro)
-        product_to_macro[product] = answer
+        answer = product_question(tags, question)
+        product_to_question[product] = answer
 
-        if len(product_to_macro) == requested_amt:
+        if len(product_to_question) == requested_amt:
             break
 
     json_object = json.dumps({
         "search_query": url,
-        "products_to_macro": product_to_macro
+        "products_to_macro": product_to_question
     })
 
     return json_object
@@ -51,7 +51,7 @@ def products_to_macro_json(driver, url: str, macro: str, requested_amt: int):
 #     pass
 
 
-def main(url, macro, requested_amt):
+def main(url, question, requested_amt):
     """ Find the product and its relevant macro information and stores it in a database """
 
     chrome_options = webdriver.ChromeOptions()
@@ -67,7 +67,7 @@ def main(url, macro, requested_amt):
     driver = webdriver.Chrome(chrome_options=chrome_options)
 
     try:
-        res = products_to_macro_json(driver, url, macro, int(requested_amt))
+        res = products_to_question_json(driver, url, question, int(requested_amt))
     finally:
         driver.quit()
 
