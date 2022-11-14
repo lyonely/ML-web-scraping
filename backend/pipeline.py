@@ -22,9 +22,10 @@ KEYWORD = ""
 
 def get_product_urls():
     """ Look for product urls in MongoDB """
-    products = set(db_product_urls(URL)["products"])
+
+    product_urls = db_product_urls(URL)
     # If product_urls don't exist, run through algorithm
-    if products is None:
+    if product_urls is None:
         page = soup(DRIVER, URL)
         domain = urlparse(URL).netloc
         products = set()
@@ -36,6 +37,8 @@ def get_product_urls():
 
         db_send({"url": URL, "products": list(products)}, "urls")
 
+    else:
+        products = product_urls["products"]
     return products
 
 
@@ -83,6 +86,7 @@ def main(url, keyword):
         product_urls: set = get_product_urls()
         res: dict = products_to_macro(product_urls)
         db_send(res, "ml_results")
+        res.pop("_id", None)
         return res
     finally:
         DRIVER.quit()
