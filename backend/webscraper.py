@@ -1,24 +1,21 @@
-import time
 from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
 
 
-def get_soup(driver, url):
+def soup(driver, url):
     """Scrapes the web"""
     try:
         driver.get(url)
-
-        time.sleep(20)
-
         page = driver.page_source
-
-        assert "No results found." not in page
-
-        soup = BeautifulSoup(page, 'html.parser')
-        return soup
+        return BeautifulSoup(page, 'html.parser')
     except HTTPError:
         print("Error with: " + url)
     except URLError:
         print("Error with: " + url)
 
     return None
+
+
+def soup_without_driver(html: str):
+    """ Uses frontend to scrape """
+    return BeautifulSoup(html, 'html.parser')
