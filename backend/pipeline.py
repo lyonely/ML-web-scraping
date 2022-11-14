@@ -18,15 +18,20 @@ KEYWORD = ""
 
 
 def get_product_urls():
-    """ Retrieves products and their relevant macro information """
-    page = soup(DRIVER, URL)
-    domain = urlparse(URL).netloc
-    products = set()
-    links = set(page.select('a'))
-    for link in links:
-        to_scrape: str = "https://" + str(domain) + str(link.get('href'))
-        if '/products/' in to_scrape:
-            products.add(to_scrape)
+    """ Look for product urls in MongoDB """
+    products = set(db_product_urls(URL)["products"])
+    """ If product_urls don't exist, run through algorithm """
+    if products is None:
+        page = soup(DRIVER, URL)
+        domain = urlparse(URL).netloc
+        products = set()
+        links = set(page.select('a'))
+        for link in links:
+            to_scrape: str = "https://" + str(domain) + str(link.get('href'))
+            if '/products/' in to_scrape:
+                products.add(to_scrape)
+
+        db_send({"url": URL, "products": list(products)}, "urls")
 
     return products
 
@@ -48,27 +53,19 @@ def products_to_macro(products: set[str]):
 
 
 def main(url, keyword, amount):
-    # supported keywords: [fat, protein, carbohydrate, price]
     """ Find the product and its relevant macro information and stores it in a database """
     global URL, KEYWORD, DRIVER
     URL = str(url)
     KEYWORD = keyword
 
-    # """ Find result in MongoDB / Cached """
+    """ Find result in MongoDB / Cached """
     cached_result = db_products_to_keyword(URL, KEYWORD)
     if cached_result is not None:
         return cached_result
 
-    """ Look for product urls in MongoDB """
-    product_urls = set(db_product_urls(URL)["products"])
     DRIVER = webdriver.Chrome(service=Service("./backend/drivers/chromedriver"))
-
-    """ If product_urls don't exist, run through algorithm """
-    if product_urls is None:
-        product_urls: set = get_product_urls()
-        db_send({"url": URL, "products": list(product_urls)}, "urls")
-
     try:
+        product_urls: set = get_product_urls()
         res: dict = products_to_macro(product_urls)
         db_send(res, "ml_results")
         return res
