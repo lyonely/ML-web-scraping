@@ -9,7 +9,7 @@ question_answerer = pipeline("question-answering",
 # q/a pipeline set up with the "deepset/roberta-base-squad2" model
 # https://huggingface.co/deepset/roberta-base-squad2
 
-
+#pylint: disable-next=too-many-locals
 def product_macro(tags: List[str], macro: str):
     """ get all tags of soup """
     results: Dict[str, int] = {}
@@ -50,7 +50,7 @@ def product_macro(tags: List[str], macro: str):
     # each other as the most common answer provided by the algorithm
     answers = [max_answer, answer_common, answer_sum_confidences]
     final_answer = collections.Counter(answers).most_common(1)[0][0]
-    match = re.search(r"[0-9][0-9]*.?[0-9]*", answer_sum_confidences)
+    match = re.search(r"[0-9][0-9]*.?[0-9]*", final_answer)
 
     if match:
         return match.group()

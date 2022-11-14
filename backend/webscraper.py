@@ -1,4 +1,3 @@
-import time
 from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
 
@@ -18,4 +17,5 @@ def soup(driver, url):
 
 
 def soup_without_driver(html: str):
+    """ Uses frontend to scrape """
     return BeautifulSoup(html, 'html.parser')

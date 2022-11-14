@@ -1,15 +1,18 @@
 import sys
 import os
 
+from typing import Set
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
+#pylint: disable-next=unused-import, import-error
+import chromedriver_binary
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 
-from backend.webscraper import *
+from backend.webscraper import soup
 from backend.macro_nlp import product_macro
-from backend.db_connection import *
+from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
 
-# pylint: disable-next=unused-import, import-error
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 DRIVER = None
@@ -20,7 +23,7 @@ KEYWORD = ""
 def get_product_urls():
     """ Look for product urls in MongoDB """
     products = set(db_product_urls(URL)["products"])
-    """ If product_urls don't exist, run through algorithm """
+    # If product_urls don't exist, run through algorithm
     if products is None:
         page = soup(DRIVER, URL)
         domain = urlparse(URL).netloc
@@ -36,7 +39,8 @@ def get_product_urls():
     return products
 
 
-def products_to_macro(products: set[str]):
+def products_to_macro(products: Set[str]):
+    """ Runs the ML pipeline to get macro for products """
     products_to_keyword = {}
 
     while len(products) > 0:
@@ -46,24 +50,35 @@ def products_to_macro(products: set[str]):
             tags = [str(tag).strip().lower() for tag in page]
             answer = product_macro(tags, str(KEYWORD).strip().lower())
             products_to_keyword[product] = answer
-        except Exception:
+        except (HTTPError, URLError):
             continue
 
     return {"search_query": URL, "keyword": KEYWORD, "products_to_keyword": products_to_keyword}
 
 
-def main(url, keyword, amount):
+def main(url, keyword):
     """ Find the product and its relevant macro information and stores it in a database """
+    #pylint: disable-next=global-statement
     global URL, KEYWORD, DRIVER
     URL = str(url)
     KEYWORD = keyword
 
-    """ Find result in MongoDB / Cached """
+    # Find result in MongoDB / Cached
     cached_result = db_products_to_keyword(URL, KEYWORD)
     if cached_result is not None:
         return cached_result
 
-    DRIVER = webdriver.Chrome(service=Service("./backend/drivers/chromedriver"))
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("window-size=1400,2100")
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+        (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+    chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
+
+    DRIVER = webdriver.Chrome(chrome_options=chrome_options)
     try:
         product_urls: set = get_product_urls()
         res: dict = products_to_macro(product_urls)
@@ -74,4 +89,4 @@ def main(url, keyword, amount):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2])

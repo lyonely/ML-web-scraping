@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 
-CLIENT_URL = "mongodb+srv://nasty:palantir@mlscraper.mkyk7w5.mongodb.net/?retryWrites=true&w=majority"
+CLIENT_URL = "mongodb+srv://nasty:palantir@mlscraper.mkyk7w5.mongodb.net/" + \
+    "?retryWrites=true&w=majority"
 
 try:
     conn = MongoClient(CLIENT_URL)
@@ -12,7 +13,7 @@ except ConnectionError:
 
 
 def db_send(data: dict, collection: str):
-    # add functionality to update result
+    """ Sends data to MongoDB. Need to add functionality to update it."""
     if collection == "ml_results":
         ml_results.insert_one(data)
     else:
@@ -20,8 +21,11 @@ def db_send(data: dict, collection: str):
 
 
 def db_products_to_keyword(url: str, keyword: str):
-    return ml_results.find_one({"search_query": url, "keyword": keyword}, {"products_to_keyword": 1})
+    """ Retrieves object associated with url and keyword"""
+    return ml_results.find_one({"search_query": url, "keyword": keyword}, \
+        {"products_to_keyword": 1})
 
 
 def db_product_urls(url: str):
+    """ Retrieves object associated with url"""
     return urls.find_one({"url": url}, {"products": 1})
