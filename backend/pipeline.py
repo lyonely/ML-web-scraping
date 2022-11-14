@@ -6,12 +6,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
-from selenium import webdriver
-
-from backend.webscraper import soup
-from backend.macro_nlp import product_macro
-from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
-
+from backend.webscraper import get_soup
+from backend.macro_nlp import product_question
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -19,28 +15,36 @@ DRIVER = None
 URL = ""
 KEYWORD = ""
 
+def products_to_question_json(driver, url: str, question: str, requested_amt: int):
+    """ Retrieves products and their relevant macro information """
+    soup = get_soup(driver, url)
+    products_url = []
+    try:
+        links = soup.select('a')
+        for link in links:
+            to_scrape = 'https://www.tesco.com' + str(link.get('href'))
+            if '/products/' in to_scrape:
+                products_url.append(to_scrape)
 
 def get_product_urls():
     """ Look for product urls in MongoDB """
 
-    product_urls = db_product_urls(URL)
-    # If product_urls don't exist, run through algorithm
-    if product_urls is None:
-        page = soup(DRIVER, URL)
-        domain = urlparse(URL).netloc
-        products = set()
-        links = set(page.select('a'))
-        for link in links:
-            to_scrape: str = "https://" + str(domain) + str(link.get('href'))
-            if '/products/' in to_scrape:
-                products.add(to_scrape)
+    product_to_question = {}
+    for product in products_url:
+        soup = get_soup(driver, product).find_all()
+        tags: List[str] = [str(tag).strip().lower() for tag in soup]
+        question = str(question).strip().lower()
 
-        db_send({"url": URL, "products": list(products)}, "urls")
+        answer = product_question(tags, question)
+        product_to_question[product] = answer
 
-    else:
-        products = product_urls["products"]
-    return products
+        if len(product_to_question) == requested_amt:
+            break
 
+    json_object = json.dumps({
+        "search_query": url,
+        "products_to_macro": product_to_question
+    })
 
 def products_to_macro(products: Set[str]):
     """ Runs the ML pipeline to get macro for products """
@@ -59,7 +63,7 @@ def products_to_macro(products: Set[str]):
     return {"search_query": URL, "keyword": KEYWORD, "products_to_keyword": products_to_keyword}
 
 
-def main(url, keyword):
+def main(url, question, requested_amt):
     """ Find the product and its relevant macro information and stores it in a database """
     #pylint: disable-next=global-statement
     global URL, KEYWORD, DRIVER
@@ -83,11 +87,7 @@ def main(url, keyword):
 
     DRIVER = webdriver.Chrome(chrome_options=chrome_options)
     try:
-        product_urls: set = get_product_urls()
-        res: dict = products_to_macro(product_urls)
-        db_send(res, "ml_results")
-        res.pop("_id", None)
-        return res
+        res = products_to_question_json(driver, url, question, int(requested_amt))
     finally:
         DRIVER.quit()
 
