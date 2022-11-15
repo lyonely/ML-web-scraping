@@ -9,7 +9,7 @@ import chromedriver_binary
 from selenium import webdriver
 
 from webscraper import soup
-from macro_nlp import product_question, get_keywords
+from macro_nlp import product_question, get_keywords, product_question_distil
 from db_connection import db_product_urls, db_send, db_products_to_keyword
 
 
@@ -50,14 +50,18 @@ def products_to_question(products: Set[str]):
     while len(products) > 0:
         product = products.pop()
         try:
-            page = soup(DRIVER, product).find_all()
-            tags = [str(tag).strip().lower() for tag in page]
+            tags = get_tags_form_product(product)
             answer = product_question(tags, str(QUESTION).strip().lower())
+            #answer = product_question_distil(tags, str(QUESTION).strip().lower())
             products_to_keyword[product] = answer
         except (HTTPError, URLError):
             continue
 
     return {"search_query": URL, "keyword": KEYWORD, "products_to_keyword": products_to_keyword}
+
+def get_tags_form_product(product):
+    page = soup(DRIVER, product).find_all()
+    return [str(tag).strip().lower() for tag in page]
 
 
 def main(url, question):
