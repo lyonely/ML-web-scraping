@@ -9,6 +9,7 @@ import chromedriver_binary
 from selenium import webdriver
 
 from webscraper import soup
+import macro_nlp_oop
 from macro_nlp import product_question, get_keywords, product_question_distil
 from db_connection import db_product_urls, db_send, db_products_to_keyword
 
@@ -19,6 +20,8 @@ DRIVER = None
 URL = ""
 KEYWORD = ""
 QUESTION = ""
+
+
 
 
 def get_product_urls():
