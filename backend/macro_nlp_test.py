@@ -3,22 +3,24 @@ from unittest.mock import MagicMock
 
 
 from macro_nlp import get_keywords, product_question, correction
+from macro_nlp_oop import MacroNLP
 from pipeline import product_question
 
+macroNLP = MacroNLP(pipeline("question-answering", model="deepset/roberta-base-squad2"))
 
 class TestGetKeywords(unittest.TestCase):
 
     def test_single_word(self):
-        self.assertEqual('fat', get_keywords('fat', 1)[0])
-        self.assertEqual('palantir', get_keywords('palantir', 1)[0])
+        self.assertEqual('fat', macroNLP.get_keywords('fat', 1)[0])
+        self.assertEqual('palantir', macroNLP.get_keywords('palantir', 1)[0])
     
     def test_simple_questions(self):
-        self.assertEqual('fat', get_keywords('What is fat?', 1)[0])
-        self.assertEqual(set(['much', 'sugar']), set(get_keywords('How much sugar?', 2)))
+        self.assertEqual('fat', macroNLP.get_keywords('What is fat?', 1)[0])
+        self.assertEqual(set(['much', 'sugar']), set(macroNLP.get_keywords('How much sugar?', 2)))
     
     def test_complex_questions(self):
-        self.assertEqual(set(['cheapest', 'red', 'shirt']), set(get_keywords('What is the cheapest red shirt?',3)))
-        self.assertEqual(set(['protein', 'chicken', 'breast']), set(get_keywords('What is the chicken breast with the most protein?',3)))
+        self.assertEqual(set(['cheapest', 'red', 'shirt']), set(macroNLP.get_keywords('What is the cheapest red shirt?',3)))
+        self.assertEqual(set(['protein', 'chicken', 'breast']), set(macroNLP.get_keywords('What is the chicken breast with the most protein?',3)))
 
 
 class TestCorrection(unittest.TestCase):

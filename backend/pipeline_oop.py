@@ -13,7 +13,18 @@ from typing import List
 class Pipeline:
 
     def __init__(self) -> None:
-        self.DRIVER = None 
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("window-size=1400,2100")
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+            (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
+
+        self.DRIVER = webdriver.Chrome(chrome_options=chrome_options)
+        # self.DRIVER = None 
         self.URL = ""
         self.QUESTION = ""
         self.macroNLP = MacroNLP(pipeline("question-answering",
@@ -39,6 +50,10 @@ class Pipeline:
             products = product_urls["products"]
         return products
     
+    # def get_tags_from_product(self, product):
+    #     page = soup(self.DRIVER, product).find_all()
+    #     return [str(tag).strip().lower() for tag in page]
+
     def products_to_question(self, products: Set[str]):
         """ Runs the ML pipeline to get macro for products """
         products_to_keyword = {}
@@ -46,7 +61,9 @@ class Pipeline:
         while len(products) > 0:
             product = products.pop()
             try:
-                tags = self.get_tags_form_product(product)
+                page = soup(self.DRIVER, product).find_all()
+                tags = [str(tag).strip().lower() for tag in page]
+                # tags = self.get_tags_form_product(product)
                 answer = self.macroNLP.product_question(tags, str(self.QUESTION).strip().lower())
                 #answer = product_question_distil(tags, str(QUESTION).strip().lower())
                 products_to_keyword[product] = answer
@@ -55,15 +72,13 @@ class Pipeline:
 
         return {"search_query": self.URL, "keyword": self.KEYWORD, "products_to_keyword": products_to_keyword}
     
-    def get_tags_from_product(self, product):
-        page = soup(self.DRIVER, product).find_all()
-        return [str(tag).strip().lower() for tag in page]
+
     
 
     def main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
         #pylint: disable-next=global-statement
-        global URL, QUESTION, DRIVER
+        #flobal URL, QUESTION, DRIVER
         self.URL = str(url)
         self.QUESTION = question
 
@@ -78,17 +93,17 @@ class Pipeline:
         if cached_result is not None:
             return cached_result
 
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("window-size=1400,2100")
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
-            (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-        chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
+        # chrome_options = webdriver.ChromeOptions()
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--no-sandbox")
+        # chrome_options.add_argument("window-size=1400,2100")
+        # chrome_options.add_argument('--disable-gpu')
+        # chrome_options.add_argument('--disable-dev-shm-usage')
+        # user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+        #     (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        # chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
 
-        DRIVER = webdriver.Chrome(chrome_options=chrome_options)
+        # self.DRIVER = webdriver.Chrome(chrome_options=chrome_options)
         try:
             product_urls: set = self.get_product_urls()
             res: dict = self.products_to_question(product_urls)
@@ -96,7 +111,7 @@ class Pipeline:
             res.pop("_id", None)
             return res
         finally:
-            DRIVER.quit()
+            self.DRIVER.quit()
 
 if __name__ == "__main__":
     pipeline = Pipeline()
