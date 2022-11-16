@@ -1,6 +1,7 @@
 <html>
 <head>
     <!--<link rel="stylesheet" href="hello.css">!-->
+    <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body style="background: rgba(255, 255, 255, 0.3); width: 300px">
     <h1 style="position: relative; left: 30%; font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;">Scrape.ai</h1>
@@ -11,19 +12,22 @@
             <br><br>
             <label for="fname" style="font-size: 12px; font-style: italic;">Example Question- What is the fat content?</label>
         </form>
+
+        <div id="loading"></div>
     </div>
 
     <br>
 
     <div style="background-color: rgba(238, 244, 212); padding: 20px; margin: 5px; border-radius: 15px;">
             <label style="font-size: 15px;" for="fname">Our Product:</label><br><br>
-            <img src="/icons/icon1.png" style="width: 15px; margin-top: 5px;">
+            <img src="/icons/icon1.png" style="width: 15px; margin-top: 2px;">
             <label for="fname" style="font-size: 12px;">Scrape quick information about the product</label><br><br>
             <img src="/icons/icon2.png" style="width: 15px; margin-top: 5px;">
             <label for="fname">Save time scrolling</label><br>
     </div>
-
-    <p id="bd"></p>
+    <div id="output" style="background-color: rgba(238, 244, 212); font-size: 15px; padding: 20px; margin: 5px; border-radius: 15px;">
+        <div id="showOutput" style="font-size: 12px;"></div>
+    </div>
     <script src="popup.js"></script>
 </body>
 
