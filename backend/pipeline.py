@@ -24,7 +24,7 @@ class Pipeline:
         chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
 
         self.DRIVER = webdriver.Chrome(chrome_options=chrome_options)
-        # self.DRIVER = None 
+        # self.DRIVER = None
         self.URL = ""
         self.QUESTION = ""
         self.macroNLP = MacroNLP(pipeline("question-answering",
@@ -49,7 +49,7 @@ class Pipeline:
         else:
             products = product_urls["products"]
         return products
-    
+
     # def get_tags_from_product(self, product):
     #     page = soup(self.DRIVER, product).find_all()
     #     return [str(tag).strip().lower() for tag in page]
@@ -71,9 +71,9 @@ class Pipeline:
                 continue
 
         return {"search_query": self.URL, "question": self.QUESTION, "products_to_question": products_to_question}
-    
 
-    
+
+
 
     def main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
