@@ -16,4 +16,3 @@ tensorflow-cpu==2.10.0
 chromedriver-binary==107.0.5304.62.0
 pymongo==4.3.2
 rake-nltk==1.0.6
-nltk==3.7

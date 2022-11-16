@@ -21,4 +21,4 @@ jobs:
         run: docker build -t flask_test -f Dockerfile.test .
 
       - name: Run tests
-        run: docker build -p 5000:5000 flask_test
+        run: docker run flask_test
