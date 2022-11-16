@@ -56,7 +56,7 @@ class Pipeline:
 
     def products_to_question(self, products: Set[str]):
         """ Runs the ML pipeline to get macro for products """
-        products_to_keyword = {}
+        products_to_question = {}
 
         while len(products) > 0:
             product = products.pop()
@@ -66,11 +66,11 @@ class Pipeline:
                 # tags = self.get_tags_form_product(product)
                 answer = self.macroNLP.product_question(tags, str(self.QUESTION).strip().lower())
                 #answer = product_question_distil(tags, str(QUESTION).strip().lower())
-                products_to_keyword[product] = answer
+                products_to_question[product] = answer
             except (HTTPError, URLError):
                 continue
 
-        return {"search_query": self.URL, "keyword": self.KEYWORD, "products_to_keyword": products_to_keyword}
+        return {"search_query": self.URL, "question": self.QUESTION, "products_to_question": products_to_question}
     
 
     
