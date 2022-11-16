@@ -1,7 +1,9 @@
 from transformers import pipeline
 from rake_nltk import Rake
 import itertools
+import collections
 from typing import List, Dict
+import re
 
 
 #takes in a question_answerer
@@ -72,7 +74,7 @@ class MacroNLP:
         match = re.search(r"[0-9][0-9]*.?[0-9]?g", final_answer)
         if match:
             return match.group()
-        return correction(results)
+        return self.correction(results)
     
 
 
