@@ -11,8 +11,9 @@ RUN pip3 install -r requirements.txt
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
 
-COPY . .
+RUN python -m nltk.downloader stopwords
 
-# CMD gunicorn --bind 0.0.0.0:5000 app:app --preload
+COPY backend ./backend/
+COPY app.py .
 
 CMD python3 -m flask run --host=0.0.0.0
