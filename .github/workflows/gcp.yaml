@@ -1,10 +1,10 @@
 name: Release
 on:
   workflow_run:
-    workflows:
-      - Check Docker Build
-    branches:
-      - main
+    workflows: ["Check Docker Build"]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   docker-release:
