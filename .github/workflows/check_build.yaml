@@ -16,6 +16,3 @@ jobs:
 
       - name: Build docker image
         run: docker build -t flask_backend .
-
-      - name: Run docker image
-        run: docker run -p 5000:5000 flask_backend
