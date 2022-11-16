@@ -64,9 +64,7 @@ class Pipeline:
             try:
                 page = soup(self.driver, product).find_all()
                 tags = [str(tag).strip().lower() for tag in page]
-                # tags = self.get_tags_form_product(product)
                 answer = self.model.product_question(tags, str(self.question).strip().lower())
-                #answer = product_question_distil(tags, str(QUESTION).strip().lower())
                 products_to_question[product] = answer
             except (HTTPError, URLError):
                 continue
@@ -80,7 +78,7 @@ class Pipeline:
         self.url = str(url)
         self.question = question
 
-        #rudimentary caching for questions
+        # rudimentary caching for questions
         question_keyword = self.model.get_keywords(self.question, 1)[0]
 
         cached_result = db_products_to_keyword(self.url, question_keyword)
@@ -101,7 +99,7 @@ class Pipeline:
         self.url = str(url)
         self.question = question
 
-        #rudimentary caching for questions
+        # rudimentary caching for questions
         question_keyword = self.model.get_keywords(self.question, 1)[0]
 
         cached_result = db_products_to_keyword(self.url, question_keyword)
