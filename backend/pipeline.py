@@ -30,9 +30,8 @@ class Pipeline:
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.url = ""
         self.question = ""
-        self.nlp_model = NLPModel(pipeline("question-answering",
-                                model="deepset/roberta-base-squad2"))
-
+        self.model = NLPModel(pipeline("question-answering",
+                                       model="deepset/roberta-base-squad2"))
 
     def get_product_urls(self):
         """ Get the urls for the product page """
@@ -66,7 +65,7 @@ class Pipeline:
                 page = soup(self.driver, product).find_all()
                 tags = [str(tag).strip().lower() for tag in page]
                 # tags = self.get_tags_form_product(product)
-                answer = self.nlp_model.product_question(tags, str(self.question).strip().lower())
+                answer = self.model.product_question(tags, str(self.question).strip().lower())
                 #answer = product_question_distil(tags, str(QUESTION).strip().lower())
                 products_to_question[product] = answer
             except (HTTPError, URLError):
@@ -82,10 +81,9 @@ class Pipeline:
         self.question = question
 
         #rudimentary caching for questions
-        question_keyword = self.nlp_model.get_keywords(self.question, 1)[0]
+        question_keyword = self.model.get_keywords(self.question, 1)[0]
 
         cached_result = db_products_to_keyword(self.url, question_keyword)
-
         if cached_result is not None:
             return cached_result
 
@@ -97,6 +95,29 @@ class Pipeline:
             return res
         finally:
             self.driver.quit()
+
+    def one_product_main(self, url, question):
+        """ Find the product and its relevant macro information and stores it in a database """
+        self.url = str(url)
+        self.question = question
+
+        #rudimentary caching for questions
+        question_keyword = self.model.get_keywords(self.question, 1)[0]
+
+        cached_result = db_products_to_keyword(self.url, question_keyword)
+        if cached_result is not None:
+            return cached_result
+
+        try:
+            product_urls = set()
+            product_urls.add(url)
+            res: dict = self.products_to_question(product_urls)
+            db_send(res, "ml_results")
+            res.pop("_id", None)
+            return res
+        finally:
+            self.driver.quit()
+
 
 if __name__ == "__main__":
     pipeline = Pipeline()
