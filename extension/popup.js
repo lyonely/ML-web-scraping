@@ -25,15 +25,18 @@ function hideOutput() {
 
 // selecting loading div
 const loader = document.querySelector("#loading");
+// const loader2 = document.querySelector(".fetchingResult");
 
 // showing loading
 function displayLoading() {
     loader.classList.add("display");
+    // loader2.classList.add("display");
 }
 
 // hiding loading 
 function hideLoading() {
     loader.classList.remove("display");
+    // loader2.classList.remove("display");
 }
 
 async function fetchHandler(event) {
@@ -73,7 +76,7 @@ async function fetchHandler(event) {
         let d1 = JSON.stringify(d)
         var result_str = ""
         for (var key in d){
-          result_str += String(key) + ": " +  String(d[key]) + "\n"
+          result_str += String(key) + ": " +  String(d[key]) + "\n" + "\n"
         }
         textOutput.innerText = result_str
       })
