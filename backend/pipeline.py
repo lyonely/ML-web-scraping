@@ -1,96 +1,103 @@
 import sys
-import os
-
 from typing import Set
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
+
+from transformers import pipeline
+from selenium import webdriver
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
-from selenium import webdriver
 
-from backend.webscraper import soup
-from backend.macro_nlp import product_macro
 from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
+from backend.webscraper import soup
+from backend.nlp_model import NLPModel
+
+class Pipeline:
+    """ Orchestrates the entire flow of data from query to output"""
+
+    def __init__(self):
+        """ Initializes the Pipeline object """
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("window-size=1400,2100")
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+            (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        chrome_options.add_argument(f'user-agent={user_agent}')
+
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        self.url = ""
+        self.question = ""
+        self.nlp_model = NLPModel(pipeline("question-answering",
+                                model="deepset/roberta-base-squad2"))
 
 
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    def get_product_urls(self):
+        """ Get the urls for the product page """
+        product_urls = db_product_urls(self.url)
+        # If product_urls don't exist, run through algorithm
+        if product_urls is None:
+            page = soup(self.driver, self.url)
+            domain = urlparse(self.url).netloc
+            products = set()
+            links = set(page.select('a'))
+            for link in links:
+                to_scrape: str = "https://" + \
+                    str(domain) + \
+                    str(link.get('href'))
+                if '/products/' in to_scrape:
+                    products.add(to_scrape)
 
-DRIVER = None
-URL = ""
-KEYWORD = ""
+            db_send({"url": self.url, "products": list(products)}, "urls")
 
+        else:
+            products = product_urls["products"]
+        return products
 
-def get_product_urls():
-    """ Look for product urls in MongoDB """
+    def products_to_question(self, products: Set[str]):
+        """ Runs the ML pipeline to get macro for products """
+        products_to_question = {}
 
-    product_urls = db_product_urls(URL)
-    # If product_urls don't exist, run through algorithm
-    if product_urls is None:
-        page = soup(DRIVER, URL)
-        domain = urlparse(URL).netloc
-        products = set()
-        links = set(page.select('a'))
-        for link in links:
-            to_scrape: str = "https://" + str(domain) + str(link.get('href'))
-            if '/products/' in to_scrape:
-                products.add(to_scrape)
+        while len(products) > 0:
+            product = products.pop()
+            try:
+                page = soup(self.driver, product).find_all()
+                tags = [str(tag).strip().lower() for tag in page]
+                # tags = self.get_tags_form_product(product)
+                answer = self.nlp_model.product_question(tags, str(self.question).strip().lower())
+                #answer = product_question_distil(tags, str(QUESTION).strip().lower())
+                products_to_question[product] = answer
+            except (HTTPError, URLError):
+                continue
 
-        db_send({"url": URL, "products": list(products)}, "urls")
+        return {"search_query": self.url,
+                "question": self.question,
+                "products_to_question": products_to_question}
 
-    else:
-        products = product_urls["products"]
-    return products
+    def main(self, url, question):
+        """ Find the product and its relevant macro information and stores it in a database """
+        self.url = str(url)
+        self.question = question
 
+        #rudimentary caching for questions
+        question_keyword = self.nlp_model.get_keywords(self.question, 1)[0]
 
-def products_to_macro(products: Set[str]):
-    """ Runs the ML pipeline to get macro for products """
-    products_to_keyword = {}
+        cached_result = db_products_to_keyword(self.url, question_keyword)
 
-    while len(products) > 0:
-        product = products.pop()
+        if cached_result is not None:
+            return cached_result
+
         try:
-            page = soup(DRIVER, product).find_all()
-            tags = [str(tag).strip().lower() for tag in page]
-            answer = product_macro(tags, str(KEYWORD).strip().lower())
-            products_to_keyword[product] = answer
-        except (HTTPError, URLError):
-            continue
-
-    return {"search_query": URL, "keyword": KEYWORD, "products_to_keyword": products_to_keyword}
-
-
-def main(url, keyword):
-    """ Find the product and its relevant macro information and stores it in a database """
-    #pylint: disable-next=global-statement
-    global URL, KEYWORD, DRIVER
-    URL = str(url)
-    KEYWORD = keyword
-
-    # Find result in MongoDB / Cached
-    cached_result = db_products_to_keyword(URL, KEYWORD)
-    if cached_result is not None:
-        return cached_result
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("window-size=1400,2100")
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
-        (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-    chrome_options.add_argument(f'user-agent={user_agent}')  # will need a random one in the future
-
-    DRIVER = webdriver.Chrome(chrome_options=chrome_options)
-    try:
-        product_urls: set = get_product_urls()
-        res: dict = products_to_macro(product_urls)
-        db_send(res, "ml_results")
-        res.pop("_id", None)
-        return res
-    finally:
-        DRIVER.quit()
-
+            product_urls: set = self.get_product_urls()
+            res: dict = self.products_to_question(product_urls)
+            db_send(res, "ml_results")
+            res.pop("_id", None)
+            return res
+        finally:
+            self.driver.quit()
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    pipeline = Pipeline()
+    pipeline.main(sys.argv[1], sys.argv[2])
