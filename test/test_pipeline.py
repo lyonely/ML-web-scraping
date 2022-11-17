@@ -4,11 +4,11 @@ from backend.pipeline import Pipeline
 
 class PipelineTest(unittest.TestCase):
     """ Class to test pipelines"""
-    @unittest.mock.patch('macro_nlp.product_question', return_value = "")
+    @unittest.mock.patch('backend.nlp_model.product_question', return_value = "")
     def test_products_to_question(self):
         """ Tests getting products to questions"""
         pipeline = Pipeline()
-        with unittest.mock.patch('macro_nlp.product_question', return_value = ""):
+        with unittest.mock.patch('backend.nlp_model.product_question', return_value = ""):
             self.assertEqual("", pipeline.products_to_question(set("1", "2", "3")))
 
     def get_product_urls(self):
