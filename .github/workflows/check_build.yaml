@@ -20,5 +20,5 @@ jobs:
       - name: Build test docker image
         run: docker build -t flask_test -f Dockerfile.test .
 
-      - name: Run tests
-        run: docker run flask_test
+      # - name: Run tests
+      #   run: docker run flask_test
