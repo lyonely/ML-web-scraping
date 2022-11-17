@@ -85,14 +85,11 @@ class Pipeline:
         if cached_result is not None:
             return cached_result
 
-        try:
-            product_urls: set = self.get_product_urls()
-            res: dict = self.products_to_question(product_urls)
-            db_send(res, "ml_results")
-            res.pop("_id", None)
-            return res
-        finally:
-            self.driver.quit()
+        product_urls: set = self.get_product_urls()
+        res: dict = self.products_to_question(product_urls)
+        db_send(res, "ml_results")
+        res.pop("_id", None)
+        return res
 
     def one_product_main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
@@ -106,15 +103,12 @@ class Pipeline:
         if cached_result is not None:
             return cached_result
 
-        try:
-            product_urls = set()
-            product_urls.add(url)
-            res: dict = self.products_to_question(product_urls)
-            db_send(res, "ml_results")
-            res.pop("_id", None)
-            return res
-        finally:
-            self.driver.quit()
+        product_urls = set()
+        product_urls.add(url)
+        res: dict = self.products_to_question(product_urls)
+        db_send(res, "ml_results")
+        res.pop("_id", None)
+        return res
 
 
 if __name__ == "__main__":
