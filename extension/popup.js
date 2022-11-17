@@ -142,7 +142,7 @@ async function fetchHandler(event) {
 
   console.log(data.url + " " + data.macro)
 
-  fetch('http://34.107.31.3:5000/macro', {
+  fetch('http://34.159.89.241:5000/macro', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
@@ -187,7 +187,7 @@ async function fetchHandler_two(event) {
 
   console.log(data.url + " " + data.macro)
 
-  fetch('http://34.107.31.3:5000/one_macro', {
+  fetch('http://34.159.89.241:5000/one_macro', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
