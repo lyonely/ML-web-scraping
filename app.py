@@ -31,5 +31,7 @@ def nutritional_information_for_one_product():
     if request.method == 'POST':
         request_data = request.get_json()
         return pipeline.one_product_main(request_data['url'],
-                             request_data['macro'])
+                                         request_data['macro'])
     return "Error: received GET request instead of POST request"
+
+

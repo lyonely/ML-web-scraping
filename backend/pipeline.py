@@ -58,7 +58,6 @@ class Pipeline:
     def products_to_question(self, products: Set[str]):
         """ Runs the ML pipeline to get macro for products """
         products_to_question = {}
-
         while len(products) > 0:
             product = products.pop()
             try:
@@ -73,15 +72,14 @@ class Pipeline:
                 "question": self.question,
                 "products_to_question": products_to_question}
 
-    def main(self, url, question):
+    def main(self, url, keyword):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
-        self.question = question
+        self.question = keyword
 
         # rudimentary caching for questions
-        question_keyword = self.model.get_keywords(self.question, 1)[0]
 
-        cached_result = db_products_to_keyword(self.url, question_keyword)
+        cached_result = db_products_to_keyword(self.url, keyword)
         if cached_result is not None:
             return cached_result
 
@@ -96,21 +94,21 @@ class Pipeline:
         self.url = str(url)
         self.question = question
 
-        # rudimentary caching for questions
-        question_keyword = self.model.get_keywords(self.question, 1)[0]
+        question_keyword = "fat"
 
+        # rudimentary caching for questions
         cached_result = db_products_to_keyword(self.url, question_keyword)
         if cached_result is not None:
             return cached_result
-
         product_urls = set()
         product_urls.add(url)
         res: dict = self.products_to_question(product_urls)
-        db_send(res, "ml_results")
+        db_send(res, "single_result")
         res.pop("_id", None)
         return res
 
 
 if __name__ == "__main__":
     pipeline = Pipeline()
-    pipeline.main(sys.argv[1], sys.argv[2])
+    pipeline.one_product_main(sys.argv[1], sys.argv[2])
+    # pipeline.main(sys.argv[1], sys.argv[2])
