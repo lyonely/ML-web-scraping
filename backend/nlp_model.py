@@ -1,10 +1,6 @@
 import collections
-import itertools
 import re
 from typing import List, Dict
-
-from rake_nltk import Rake
-
 
 class NLPModel:
     """ NLPModel object that uses a question_answerer model """
