@@ -12,6 +12,7 @@ RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.d
 RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
 
 RUN python -m nltk.downloader punkt && python -m nltk.downloader stopwords
+RUN pip install --upgrade --force-reinstall chromedriver-binary-auto
 
 COPY backend ./backend/
 COPY app.py .

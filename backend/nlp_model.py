@@ -53,11 +53,15 @@ class NLPModel:
                     (max_answer, max_confidence) = (result["answer"],
                                                     result["score"])
 
-        answer_common = collections.Counter(answer_list).most_common(1)[0][0]
+        answer_common = ""
+        if len(answer_list) != 0:
+            answer_common = collections.Counter(answer_list).most_common(1)[0][0]
 
         # answer_sum_confidences represents the answer with the highest sum of confidences
+
         answer_sum_confidences = ""
-        answer_sum_confidences = max(results, key = results.get)
+        if results:
+            answer_sum_confidences = max(results, key = results.get)
         # max_value = results[answer_sum_confidences]
 
         # heuristic to check if answers from above are consistent with
