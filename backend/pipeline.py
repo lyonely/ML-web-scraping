@@ -11,6 +11,7 @@ import chromedriver_binary
 from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
 from backend.webscraper import soup
 from backend.nlp_model import NLPModel
+import time
 
 class Pipeline:
     """ Orchestrates the entire flow of data from query to output"""
@@ -94,10 +95,8 @@ class Pipeline:
         self.url = str(url)
         self.question = question
 
-        question_keyword = "fat"
-
         # rudimentary caching for questions
-        cached_result = db_products_to_keyword(self.url, question_keyword)
+        cached_result = db_products_to_keyword(self.url, question)
         if cached_result is not None:
             return cached_result
         product_urls = set()

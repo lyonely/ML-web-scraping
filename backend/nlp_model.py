@@ -1,9 +1,15 @@
 import collections
-import itertools
 import re
 from typing import List, Dict
-
 from rake_nltk import Rake
+import itertools
+# nltk.download('woquiet=True)
+
+
+def get_keywords(question: str, n: int):
+    r = Rake()
+    r.extract_keywords_from_text(question)
+    return list(itertools.chain.from_iterable(map(lambda x: x.split(), r.get_ranked_phrases())))[:n]
 
 
 class NLPModel:
@@ -14,58 +20,66 @@ class NLPModel:
 
         self.question_answerer = question_answerer
 
-        self.min_tag_length = 0
-        self.max_tag_length = 1000
-
-    def product_question(self, tags: List[str], keyword: str):
+    def product_question(self, tags: List[str], question: str):
         """ get all tags of soup """
         results: Dict[str, int] = {}
-        question = "What is " + keyword + "?"
+
         # max_answer represents the answer with the highest confidence
         (max_answer, max_confidence) = ("", 0)
-        # answer list will be used to find the most commonly produced answer by qa model
-        answer_list = []
+        keywords = get_keywords(question, 10)
+        search = 1
+        max_searches = 2**32
+        tags_visited = {}
+
         for tag in tags:
-            if keyword in tag and len(tag) < self.max_tag_length:
-                result = self.question_answerer(question=question, context=tag)
+            if search > max_searches:
+                break
 
-                answer_list.append(result["answer"])
-                if result["answer"] not in results:
-                    results[result["answer"]] = result["score"]
+            ignore_flag = True
+            for visited in tags_visited.keys():
+                if visited in tag and tags_visited[visited] >= 2:
+                    ignore_flag = False
+                    break
+
+            contain = False
+            for word in keywords:
+                if word in tag:
+                    contain = True
+                    break
+
+            if contain and ignore_flag and 30 < len(tag) < 400:
+                s = re.findall(r'>(.+?)<', tag)
+                context = " ".join(s)
+                if context == "":
+                    continue
+                result = self.question_answerer(question=question, context=context)
+
+                if result["answer"] in results:
+                    results[result["answer"]] += result["score"] / search
                 else:
-                    results[result["answer"]] += result["score"]
+                    results[result["answer"]] = result["score"] / search
 
-                if result["score"] > max_confidence:
-                    (max_answer, max_confidence) = (result["answer"],
-                                                    result["score"])
+                search *= 2
 
-        answer_common = ""
-        if len(answer_list) != 0:
-            answer_common = collections.Counter(answer_list).most_common(1)[0][0]
+                if tag in tags_visited:
+                    tags_visited[tag] += 1
+                else:
+                    tags_visited[tag] = 1
 
+        print(search)
         # answer_sum_confidences represents the answer with the highest sum of confidences
 
         answer_sum_confidences = ""
         if results:
             answer_sum_confidences = max(results, key=results.get)
-        # max_value = results[answer_sum_confidences]
 
         # heuristic to check if answers from above are consistent with
         # each other as the most common answer provided by the algorithm
-        answers = [max_answer, answer_common, answer_sum_confidences]
-        final_answer = collections.Counter(answers).most_common(1)[0][0]
-        match = re.search(r"[0-9][0-9]*.?[0-9]?", final_answer)
-
-        if match:
-            return match.group()
-        return self.correction(results)
+        # return self.question_answerer(question=question, context=answer_sum_confidences)["answer"]
+        return answer_sum_confidences
+        # print(self.correction(results))
+        # return self.correction(results)
 
     @staticmethod
     def correction(results: Dict[str, int]):
-        """ correction method """
-        for k, _ in results.items():
-            match = re.search(r"[0-9][0-9]*.?[0-9]?", k)
-            if match:
-                return match.group()
-
-        return ""
+        return list(dict(sorted(results.items(), key=lambda i: i[1], reverse=True)).keys())[0]
