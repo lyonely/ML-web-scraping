@@ -142,7 +142,7 @@ async function fetchHandler(event) {
 
   console.log(data.url + " " + data.macro)
 
-  fetch('http://34.159.89.241:5000/macro', {
+  fetch('http://34.116.140.226:5000/macro', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
@@ -202,12 +202,13 @@ async function fetchHandler_two(event) {
         hideLoading()
         console.log(data)
         displayOutput()
-        let d = data.products_to_keyword
+        let d = data["products_to_keyword"]
         console.log(d)
         let d1 = JSON.stringify(d)
+        console.log(d1)
         var result_str = ""
-        for (var key in d){
-          result_str += String(key) + ": " +  String(d[key]) + "\n\n"
+        for (var key in d) {
+          result_str += String(key) + ": " + String(d[key]) + "\n\n"
         }
         textOutput.innerText = result_str
       })
