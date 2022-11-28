@@ -1,85 +1,74 @@
-import collections
-import re
 from typing import List, Dict
 from rake_nltk import Rake
-import itertools
-# nltk.download('woquiet=True)
-
-
-def get_keywords(question: str, n: int):
-    r = Rake()
-    r.extract_keywords_from_text(question)
-    return list(itertools.chain.from_iterable(map(lambda x: x.split(), r.get_ranked_phrases())))[:n]
-
+import re
 
 class NLPModel:
     """ NLPModel object that uses a question_answerer model """
 
     def __init__(self, question_answerer):
         """ Initializes a NLPModel object with a model input"""
-
+        self.raker = Rake()
+        self.max_searches = 32
         self.question_answerer = question_answerer
+
+    def get_keywords(self, question: str, n: int = 1):
+        self.raker.extract_keywords_from_text(question)
+        return str(self.raker.get_ranked_phrases()[0]).split(" ")
 
     def product_question(self, tags: List[str], question: str):
         """ get all tags of soup """
         results: Dict[str, int] = {}
-
         # max_answer represents the answer with the highest confidence
-        (max_answer, max_confidence) = ("", 0)
-        keywords = get_keywords(question, 10)
+        keywords = self.get_keywords(question, 10)
+        print(keywords)
         search = 1
-        max_searches = 2**32
         tags_visited = {}
-
+        tags = [tag for tag in tags if len(tag) < 700]
+        print("Starting the algorithm")
         for tag in tags:
-            if search > max_searches:
+            if search > self.max_searches:
                 break
 
-            ignore_flag = True
-            for visited in tags_visited.keys():
-                if visited in tag and tags_visited[visited] >= 2:
-                    ignore_flag = False
-                    break
-
             contain = False
+            weight = 0
             for word in keywords:
                 if word in tag:
                     contain = True
-                    break
+                    weight += 1
 
-            if contain and ignore_flag and 30 < len(tag) < 400:
-                s = re.findall(r'>(.+?)<', tag)
-                context = " ".join(s)
-                if context == "":
-                    continue
-                result = self.question_answerer(question=question, context=context)
+            if contain:
 
-                if result["answer"] in results:
-                    results[result["answer"]] += result["score"] / search
-                else:
-                    results[result["answer"]] = result["score"] / search
+                ignore_flag = True
+                for visited in tags_visited.keys():
+                    if visited in tag and tags_visited[visited] >= 2:
+                        ignore_flag = False
+                        break
 
-                search *= 2
+                if ignore_flag:
+                    if tag in tags_visited:
+                        tags_visited[tag] += 1
+                    else:
+                        tags_visited[tag] = 1
 
-                if tag in tags_visited:
-                    tags_visited[tag] += 1
-                else:
-                    tags_visited[tag] = 1
+                    result = self.question_answerer(question=question, context=tag)
 
-        print(search)
-        # answer_sum_confidences represents the answer with the highest sum of confidences
+                    if result["answer"] in results:
+                        results[result["answer"]] += result["score"] / search * weight
+                    else:
+                        results[result["answer"]] = result["score"] / search * weight
 
-        answer_sum_confidences = ""
+                    search += 1
+        print(results)
+        answer = ""
         if results:
-            answer_sum_confidences = max(results, key=results.get)
+            answer = max(results, key=results.get)
 
-        # heuristic to check if answers from above are consistent with
-        # each other as the most common answer provided by the algorithm
-        # return self.question_answerer(question=question, context=answer_sum_confidences)["answer"]
-        return answer_sum_confidences
-        # print(self.correction(results))
-        # return self.correction(results)
+        if ">" in answer:
+            if m := re.findall(r">(.*)<?", answer):
+                answer = m[0]
+        if "<" in answer:
+            if m := re.findall(r"(.*)<", answer):
+                answer = m[0]
 
-    @staticmethod
-    def correction(results: Dict[str, int]):
-        return list(dict(sorted(results.items(), key=lambda i: i[1], reverse=True)).keys())[0]
+        print("Here's the answer:", answer)
+        return answer
