@@ -5,7 +5,6 @@ flask_cors==3.0.10
 selenium==4.5.0
 beautifulsoup4==4.11.1
 transformers==4.23.1
-tensorflow-cpu==2.10.0
+tensorflow==2.10.1
 # chromedriver-binary==108.0.5359.22.0
 pymongo==4.3.2
-rake-nltk==1.0.6
