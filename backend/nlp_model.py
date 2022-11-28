@@ -1,67 +1,74 @@
-import collections
-import re
 from typing import List, Dict
+from rake_nltk import Rake
+import re
 
 class NLPModel:
     """ NLPModel object that uses a question_answerer model """
 
     def __init__(self, question_answerer):
         """ Initializes a NLPModel object with a model input"""
-
+        self.raker = Rake()
+        self.max_searches = 32
         self.question_answerer = question_answerer
 
-        self.min_tag_length = 0
-        self.max_tag_length = 1000
+    def get_keywords(self, question: str, n: int = 1):
+        self.raker.extract_keywords_from_text(question)
+        return str(self.raker.get_ranked_phrases()[0]).split(" ")
 
-    def product_question(self, tags: List[str], keyword: str):
+    def product_question(self, tags: List[str], question: str):
         """ get all tags of soup """
         results: Dict[str, int] = {}
-        question = "What is " + keyword + "?"
         # max_answer represents the answer with the highest confidence
-        (max_answer, max_confidence) = ("", 0)
-        # answer list will be used to find the most commonly produced answer by qa model
-        answer_list = []
+        keywords = self.get_keywords(question, 10)
+        print(keywords)
+        search = 1
+        tags_visited = {}
+        tags = [tag for tag in tags if len(tag) < 700]
+        print("Starting the algorithm")
         for tag in tags:
-            if keyword in tag and len(tag) < self.max_tag_length:
-                result = self.question_answerer(question=question, context=tag)
+            if search > self.max_searches:
+                break
 
-                answer_list.append(result["answer"])
-                if result["answer"] not in results:
-                    results[result["answer"]] = result["score"]
-                else:
-                    results[result["answer"]] += result["score"]
+            contain = False
+            weight = 0
+            for word in keywords:
+                if word in tag:
+                    contain = True
+                    weight += 1
 
-                if result["score"] > max_confidence:
-                    (max_answer, max_confidence) = (result["answer"],
-                                                    result["score"])
+            if contain:
 
-        answer_common = ""
-        if len(answer_list) != 0:
-            answer_common = collections.Counter(answer_list).most_common(1)[0][0]
+                ignore_flag = True
+                for visited in tags_visited.keys():
+                    if visited in tag and tags_visited[visited] >= 2:
+                        ignore_flag = False
+                        break
 
-        # answer_sum_confidences represents the answer with the highest sum of confidences
+                if ignore_flag:
+                    if tag in tags_visited:
+                        tags_visited[tag] += 1
+                    else:
+                        tags_visited[tag] = 1
 
-        answer_sum_confidences = ""
+                    result = self.question_answerer(question=question, context=tag)
+
+                    if result["answer"] in results:
+                        results[result["answer"]] += result["score"] / search * weight
+                    else:
+                        results[result["answer"]] = result["score"] / search * weight
+
+                    search += 1
+        print(results)
+        answer = ""
         if results:
-            answer_sum_confidences = max(results, key=results.get)
-        # max_value = results[answer_sum_confidences]
+            answer = max(results, key=results.get)
 
-        # heuristic to check if answers from above are consistent with
-        # each other as the most common answer provided by the algorithm
-        answers = [max_answer, answer_common, answer_sum_confidences]
-        final_answer = collections.Counter(answers).most_common(1)[0][0]
-        match = re.search(r"[0-9][0-9]*.?[0-9]?", final_answer)
+        if ">" in answer:
+            if m := re.findall(r">(.*)<?", answer):
+                answer = m[0]
+        if "<" in answer:
+            if m := re.findall(r"(.*)<", answer):
+                answer = m[0]
 
-        if match:
-            return match.group()
-        return self.correction(results)
-
-    @staticmethod
-    def correction(results: Dict[str, int]):
-        """ correction method """
-        for k, _ in results.items():
-            match = re.search(r"[0-9][0-9]*.?[0-9]?", k)
-            if match:
-                return match.group()
-
-        return ""
+        print("Here's the answer:", answer)
+        return answer

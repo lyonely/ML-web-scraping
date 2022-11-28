@@ -11,6 +11,8 @@ import chromedriver_binary
 from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
 from backend.webscraper import soup
 from backend.nlp_model import NLPModel
+import time
+
 
 class Pipeline:
     """ Orchestrates the entire flow of data from query to output"""
@@ -93,16 +95,19 @@ class Pipeline:
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
         self.question = question
-
-        question_keyword = "fat"
-
+        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+        print("Working on the following url:", url)
+        print("For the following query:", question, "\n")
         # rudimentary caching for questions
-        cached_result = db_products_to_keyword(self.url, question_keyword)
+        cached_result = db_products_to_keyword(self.url, question)
         if cached_result is not None:
+            print("Cache Hit!!")
             return cached_result
+        print("The query, url pair didn't exist in cache, carrying on...")
         product_urls = set()
         product_urls.add(url)
         res: dict = self.products_to_question(product_urls)
+        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
         db_send(res, "single_result")
         res.pop("_id", None)
         return res
