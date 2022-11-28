@@ -108,7 +108,7 @@ class Pipeline:
         product_urls.add(url)
         res: dict = self.products_to_question(product_urls)
         print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-        # db_send(res, "single_result")
+        db_send(res, "single_result")
         res.pop("_id", None)
         return res
 
