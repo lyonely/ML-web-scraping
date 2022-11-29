@@ -57,7 +57,7 @@ class NLPModel:
 
             if contain:
                 ignore_flag = True
-                for visited, item in tags_visited:
+                for visited, item in tags_visited.items():
                     if visited in tag and item >= 2:
                         ignore_flag = False
                         break

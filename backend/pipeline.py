@@ -115,6 +115,7 @@ class Pipeline:
         product_urls.add(url)
         res: dict = self.products_to_question(product_urls)
         db_send(res)
+        res.pop("_id", None)
         return res
 
     def single_product_html(self, url, question, html):
