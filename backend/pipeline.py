@@ -2,16 +2,15 @@ import sys
 from typing import Set
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-
+from bs4 import BeautifulSoup
 from transformers import pipeline
 from selenium import webdriver
-#pylint: disable-next=unused-import, import-error
+# pylint: disable-next=unused-import, import-error
 import chromedriver_binary
 
 from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
 from backend.webscraper import soup
 from backend.nlp_model import NLPModel
-import time
 
 
 class Pipeline:
@@ -32,6 +31,7 @@ class Pipeline:
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.url = ""
         self.question = ""
+        self.html = ""
         self.model = NLPModel(pipeline("question-answering",
                                        model="deepset/roberta-base-squad2"))
 
@@ -63,8 +63,9 @@ class Pipeline:
         while len(products) > 0:
             product = products.pop()
             try:
-                page = soup(self.driver, product).find_all()
-                tags = [str(tag).strip().lower() for tag in page]
+                page = soup(self.driver, product)
+                tags = [str(tag).strip().lower() for tag in page.find_all()]
+                # alternate = self.model.alternate_algorithm(str(page), self.question)
                 answer = self.model.product_question(tags, str(self.question).strip().lower())
                 products_to_question[product] = answer
             except (HTTPError, URLError):
@@ -74,46 +75,64 @@ class Pipeline:
                 "question": self.question,
                 "products_to_question": products_to_question}
 
-    def main(self, url, keyword):
+    def html_answer(self):
+        products_to_question = {}
+
+        tags = BeautifulSoup(self.html, 'html.parser').find_all()
+        tags = [str(tag).strip().lower() for tag in tags.find_all()]
+
+        answer = self.model.product_question(tags, str(self.question).strip().lower())
+        products_to_question[self.url] = answer
+
+        return {"search_query": self.url,
+                "question": self.question,
+                "products_to_question": products_to_question}
+
+    def multiple_products(self, url, keyword):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
         self.question = keyword
 
-        # rudimentary caching for questions
-
-        cached_result = db_products_to_keyword(self.url, keyword)
+        cached_result = db_products_to_keyword(self.url, keyword, is_multiple=True)
         if cached_result is not None:
             return cached_result
 
         product_urls: set = self.get_product_urls()
         res: dict = self.products_to_question(product_urls)
-        db_send(res, "ml_results")
-        res.pop("_id", None)
+        db_send(res, is_multiple=True)
         return res
 
-    def one_product_main(self, url, question):
+    def single_product(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
-        self.question = question
-        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-        print("Working on the following url:", url)
-        print("For the following query:", question, "\n")
-        # rudimentary caching for questions
+        self.question = str(question).strip().lower()
+
+        cached_result = db_products_to_keyword(self.url, question)
+        if cached_result is not None:
+            return cached_result
+
+        product_urls = set()
+        product_urls.add(url)
+        res: dict = self.products_to_question(product_urls)
+        db_send(res)
+        return res
+
+    def single_product_html(self, url, question, html):
+        """ Find the product and its relevant macro information and stores it in a database """
+        self.url = str(url)
+        self.question = str(question).strip().lower()
+        self.html = str(html).strip()
+
         cached_result = db_products_to_keyword(self.url, question)
         if cached_result is not None:
             print("Cache Hit!!")
             return cached_result
-        print("The query, url pair didn't exist in cache, carrying on...")
-        product_urls = set()
-        product_urls.add(url)
-        res: dict = self.products_to_question(product_urls)
-        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-        db_send(res, "single_result")
-        res.pop("_id", None)
+
+        res: dict = self.html_answer()
+        db_send(res)
         return res
 
 
 if __name__ == "__main__":
     pipeline = Pipeline()
-    pipeline.one_product_main(sys.argv[1], sys.argv[2])
-    # pipeline.main(sys.argv[1], sys.argv[2])
+    pipeline.single_product(sys.argv[1], sys.argv[2])
