@@ -3,7 +3,6 @@ from typing import Set
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from transformers import pipeline
 from selenium import webdriver
 # pylint: disable-next=unused-import, import-error
 import chromedriver_binary
@@ -24,16 +23,15 @@ class Pipeline:
         chrome_options.add_argument("window-size=1400,2100")
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
-            (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1) \
+            AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
         chrome_options.add_argument(f'user-agent={user_agent}')
 
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.url = ""
         self.question = ""
         self.html = ""
-        self.model = NLPModel(pipeline("question-answering",
-                                       model="deepset/roberta-base-squad2"))
+        self.model = NLPModel()
 
     def get_product_urls(self):
         """ Get the urls for the product page """
@@ -76,6 +74,7 @@ class Pipeline:
                 "products_to_question": products_to_question}
 
     def html_answer(self):
+        """ Uses html code to find relevant information """
         products_to_question = {}
 
         tags = BeautifulSoup(self.html, 'html.parser').find_all()
@@ -100,6 +99,7 @@ class Pipeline:
         product_urls: set = self.get_product_urls()
         res: dict = self.products_to_question(product_urls)
         db_send(res, is_multiple=True)
+        res.pop("_id", None)
         return res
 
     def single_product(self, url, question):
@@ -130,6 +130,7 @@ class Pipeline:
 
         res: dict = self.html_answer()
         db_send(res)
+        res.pop("_id", None)
         return res
 
 
