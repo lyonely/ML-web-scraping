@@ -8,9 +8,9 @@ from selenium import webdriver
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
 
-from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
-from backend.webscraper import soup
-from backend.nlp_model import NLPModel
+from db_connection import db_product_urls, db_send, db_products_to_keyword
+from webscraper import soup
+from nlp_model import NLPModel
 import time
 
 
@@ -115,5 +115,5 @@ class Pipeline:
 
 if __name__ == "__main__":
     pipeline = Pipeline()
-    pipeline.one_product_main(sys.argv[1], sys.argv[2])
+    print(pipeline.one_product_main(sys.argv[1], sys.argv[2]))
     # pipeline.main(sys.argv[1], sys.argv[2])

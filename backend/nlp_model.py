@@ -8,8 +8,10 @@ class NLPModel:
     def __init__(self, question_answerer):
         """ Initializes a NLPModel object with a model input"""
         self.raker = Rake()
-        self.max_searches = 32
         self.question_answerer = question_answerer
+        self.MAX_SEARCHES = 32
+        self.NUM_KEYWORDS = 10
+        self.MAX_TAG_LENGTH = 700
 
     def get_keywords(self, question: str, n: int = 1):
         self.raker.extract_keywords_from_text(question)
@@ -19,22 +21,19 @@ class NLPModel:
         """ get all tags of soup """
         results: Dict[str, int] = {}
         # max_answer represents the answer with the highest confidence
-        keywords = self.get_keywords(question, 10)
+        keywords = self.get_keywords(question, self.NUM_KEYWORDS)
         print(keywords)
         search = 1
         tags_visited = {}
-        tags = [tag for tag in tags if len(tag) < 700]
+        tags = [tag for tag in tags if len(tag) < self.MAX_TAG_LENGTH]
         print("Starting the algorithm")
         for tag in tags:
             if search > self.max_searches:
                 break
-
-            contain = False
-            weight = 0
-            for word in keywords:
-                if word in tag:
-                    contain = True
-                    weight += 1
+            
+            word_map = [word in tag for word in keywords]
+            contain = any(word_map)
+            weight = sum(word_map)
 
             if contain:
 
