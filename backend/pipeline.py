@@ -7,6 +7,7 @@ from transformers import pipeline
 from selenium import webdriver
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
+from textblob import Word
 
 from db_connection import db_product_urls, db_send, db_products_to_keyword
 from webscraper import soup
@@ -91,15 +92,20 @@ class Pipeline:
         res.pop("_id", None)
         return res
 
+    def spell_check_question(self, question: str):
+        question_words = [word.lower() for word in question.split()]
+        corrected_words = map(lambda w: Word(w).spellcheck()[0][0], question_words)
+        return ' '.join(list(corrected_words))
+
     def one_product_main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
-        self.question = question
+        self.question = self.spell_check_question(question)
         print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
         print("Working on the following url:", url)
         print("For the following query:", question, "\n")
         # rudimentary caching for questions
-        cached_result = db_products_to_keyword(self.url, question)
+        cached_result = db_products_to_keyword(self.url, self.question)
         if cached_result is not None:
             print("Cache Hit!!")
             return cached_result
