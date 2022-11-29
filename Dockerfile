@@ -8,10 +8,12 @@ RUN apt-get install -y gconf-service libasound2 libatk1.0-0 libcairo2 libcups2 l
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
+RUN wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+RUN dpkg -i google-chrome-beta_current_amd64.deb; apt-get -fy install
 
 RUN pip install --upgrade --force-reinstall chromedriver-binary-auto
+
+RUN python -m nltk.downloader punkt && python -m nltk.downloader stopwords
 
 COPY backend ./backend/
 COPY app.py .
