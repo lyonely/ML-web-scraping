@@ -13,7 +13,7 @@ class NLPModel:
 
     def get_keywords(self, question: str, n: int = 1):
         self.raker.extract_keywords_from_text(question)
-        return str(self.raker.get_ranked_phrases()[0]).split(" ")
+        return str(self.raker.get_ranked_phrases()[0]).split(" ")[:n]
 
     def product_question(self, tags: List[str], question: str):
         """ get all tags of soup """
