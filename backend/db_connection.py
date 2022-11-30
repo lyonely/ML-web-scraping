@@ -1,3 +1,4 @@
+from backend.timer import timed
 from pymongo import MongoClient
 
 CLIENT_URL = "mongodb+srv://nasty:palantir@mlscraper.mkyk7w5.mongodb.net/" + \
@@ -11,7 +12,7 @@ try:
 except ConnectionError:
     print("Could not connect to MongoDB")
 
-
+@timed
 def db_send(data: dict, collection: str):
     """ Sends data to MongoDB. Need to add functionality to update it."""
     if collection == "ml_results":
@@ -19,7 +20,7 @@ def db_send(data: dict, collection: str):
     else:
         urls.insert_one(data)
 
-
+@timed
 def db_products_to_keyword(url: str, keyword: str):
     """ Retrieves object associated with url and keyword"""
     result = ml_results.find_one({"search_query": url, "keyword": keyword}, \
@@ -30,7 +31,7 @@ def db_products_to_keyword(url: str, keyword: str):
 
     return result
 
-
+@timed
 def db_product_urls(url: str):
     """ Retrieves object associated with url"""
     result = urls.find_one({"url": url}, {"products": 1})

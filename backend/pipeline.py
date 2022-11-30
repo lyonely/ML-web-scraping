@@ -34,6 +34,7 @@ class Pipeline:
         self.model = NLPModel(pipeline("question-answering",
                                        model="deepset/roberta-base-squad2"))
 
+    @timed
     def get_product_urls(self):
         """ Get the urls for the product page """
         product_urls = db_product_urls(self.url)
@@ -90,6 +91,7 @@ class Pipeline:
         res.pop("_id", None)
         return res
 
+    @timed
     def one_product_main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
