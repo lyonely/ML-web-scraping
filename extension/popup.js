@@ -140,6 +140,17 @@ async function fetchHandler(event) {
     macro: label,
   }
 
+  const response = fetch(data.url).then(function (response) {
+    // The API call was successful!
+    return response.text();
+  }).then(function (html) {
+    // This is the HTML from our response as a text string
+    console.log(html);
+  }).catch(function (err) {
+    // There was an error
+    console.warn('Something went wrong.', err);
+  });
+
   console.log(data.url + " " + data.macro)
 
   fetch('http://34.116.140.226:5000/macro', {
@@ -180,14 +191,30 @@ async function fetchHandler_two(event) {
   var form = document.getElementById("form")
   label = document.getElementById("fname").value
 
+  var resp = ""
+
+  fetch(tab.url).then(function (response) {
+    // The API call was successful!
+    return response.text();
+  }).then(function (html) {
+    // This is the HTML from our response as a text string
+    resp = html
+  }).catch(function (err) {
+    // There was an error
+    console.warn('Something went wrong.', err);
+  });
+
+  console.log(resp)
+
   const data = {
     url: tab.url,
     macro: label,
+    html: resp,
   }
 
-  console.log(data.url + " " + data.macro)
+  console.log(data.url + " " + data.macro + " " + data.html)
 
-  fetch('http://34.159.89.241:5000/one_macro', {
+  fetch('http://34.116.140.226:5000/one_macro_html', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),

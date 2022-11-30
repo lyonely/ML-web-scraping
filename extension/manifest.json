@@ -5,7 +5,7 @@
     "version": "1.0",
     "action": {
         "default_popup": "hello.html",
-        "default_icon": "hello_extensions.png"
+        "default_icon": "favicon-16x16.png"
     },
     "background": {
         "service_worker": "background.js"
