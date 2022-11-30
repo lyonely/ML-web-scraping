@@ -24,7 +24,7 @@
 //     loader.classList.add("display");
 // }
 
-// // hiding loading 
+// // hiding loading
 // function hideLoading() {
 //     loader.classList.remove("display");
 // }
@@ -107,7 +107,7 @@ function displayOutput() {
   // to stop loading after some time
 }
 
-// hiding output 
+// hiding output
 function hideOutput() {
   loader.classList.remove("visible");
 }
@@ -120,7 +120,7 @@ function displayLoading() {
     loader.classList.add("display");
 }
 
-// hiding loading 
+// hiding loading
 function hideLoading() {
     loader.classList.remove("display");
 }
@@ -191,20 +191,12 @@ async function fetchHandler_two(event) {
   var form = document.getElementById("form")
   label = document.getElementById("fname").value
 
-  var resp = ""
+  var html_code = ""
 
-  fetch(tab.url).then(function (response) {
+  let resp = await fetch(tab.url).then(function (response) {
     // The API call was successful!
     return response.text();
-  }).then(function (html) {
-    // This is the HTML from our response as a text string
-    resp = html
-  }).catch(function (err) {
-    // There was an error
-    console.warn('Something went wrong.', err);
-  });
-
-  console.log(resp)
+  })
 
   const data = {
     url: tab.url,
@@ -214,7 +206,7 @@ async function fetchHandler_two(event) {
 
   console.log(data.url + " " + data.macro + " " + data.html)
 
-  fetch('http://34.116.140.226:5000/one_macro_html', {
+  fetch('http://127.0.0.1:5000/one_macro_html', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
@@ -229,7 +221,7 @@ async function fetchHandler_two(event) {
         hideLoading()
         console.log(data)
         displayOutput()
-        let d = data["products_to_keyword"]
+        let d = data["products_to_question"]
         console.log(d)
         let d1 = JSON.stringify(d)
         console.log(d1)
@@ -242,4 +234,3 @@ async function fetchHandler_two(event) {
       .catch(error => console.error('Error:', error));
 
 };
-

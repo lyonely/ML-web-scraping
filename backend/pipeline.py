@@ -78,7 +78,7 @@ class Pipeline:
         products_to_question = {}
 
         tags = BeautifulSoup(self.html, 'html.parser').find_all()
-        tags = [str(tag).strip().lower() for tag in tags.find_all()]
+        tags = [str(tag).strip().lower() for tag in tags]
 
         answer = self.model.product_question(tags, str(self.question).strip().lower())
         products_to_question[self.url] = answer
