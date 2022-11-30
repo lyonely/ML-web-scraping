@@ -75,6 +75,11 @@ class Pipeline:
                 "question": self.question,
                 "products_to_question": products_to_question}
 
+    def spell_check_question(self, question: str):
+        question_words = [word.lower() for word in question.split()]
+        corrected_words = map(lambda w: Word(w).spellcheck()[0][0], question_words)
+        return ' '.join(list(corrected_words))
+
     def main(self, url, keyword):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
@@ -92,10 +97,7 @@ class Pipeline:
         res.pop("_id", None)
         return res
 
-    def spell_check_question(self, question: str):
-        question_words = [word.lower() for word in question.split()]
-        corrected_words = map(lambda w: Word(w).spellcheck()[0][0], question_words)
-        return ' '.join(list(corrected_words))
+
 
     def one_product_main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
