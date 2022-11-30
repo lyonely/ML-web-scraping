@@ -2,6 +2,7 @@ import sys
 from typing import Set
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
+from backend.timer import timed
 
 from transformers import pipeline
 from selenium import webdriver

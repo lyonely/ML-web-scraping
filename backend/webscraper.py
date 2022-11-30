@@ -1,7 +1,9 @@
 from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
 
+from backend.timer import timed
 
+@timed
 def soup(driver, url):
     """Scrapes the web"""
     try:

@@ -2,6 +2,8 @@ import collections
 import re
 from typing import List, Dict
 
+from backend.timer import timed
+
 class NLPModel:
     """ NLPModel object that uses a question_answerer model """
 
@@ -13,6 +15,7 @@ class NLPModel:
         self.min_tag_length = 0
         self.max_tag_length = 1000
 
+    @timed
     def product_question(self, tags: List[str], keyword: str):
         """ get all tags of soup """
         results: Dict[str, int] = {}
