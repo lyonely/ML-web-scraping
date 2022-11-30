@@ -104,8 +104,8 @@ class Pipeline:
         self.url = str(url)
         self.question = self.spell_check_question(question)
         print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-        print("Working on the following url:", url)
-        print("For the following query:", question, "\n")
+        print("Working on the following url:", self.url)
+        print("For the following query:", self.question, "\n")
         # rudimentary caching for questions
         cached_result = db_products_to_keyword(self.url, self.question)
         if cached_result is not None:

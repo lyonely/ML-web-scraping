@@ -23,6 +23,16 @@ class NLPModel:
     
 
     def product_question(self, tags: List[str], question: str):
+        """
+        IDEAS TO REDUCE THE NUMBER OF TIMES WE CALL THE MODEL
+
+        1. make contain more strict (maybe a certain percentage has to contain the words?)
+        2. make tags a shorter list - self.MAX_TAG_LENGTH can be shorter
+        3. shouldn't we remove all the html from visited? ie just be left with the text
+        4. make numsearches shorter
+        5. maybe tune max_searches depending on type of website
+        
+        """
         """ get all tags of soup """
         results: Dict[str, int] = {}
         # max_answer represents the answer with the highest confidence
@@ -63,7 +73,8 @@ class NLPModel:
                         
 
                     for visited in tags_visited.keys():
-                        if (visited in tag or tag in visited) and tags_visited[visited] >= self.MAX_VISITS_PER_TAG:
+                        text_tag = re.sub("\<.*?\>", "", tag)
+                        if (visited in text_tag or text_tag in visited) and tags_visited[visited] >= self.MAX_VISITS_PER_TAG:
                             ignore_flag = True 
                             break
 
@@ -72,6 +83,7 @@ class NLPModel:
                             tags_visited[tag] += 1
                         else:
                             tags_visited[tag] = 1
+
 
                         #print("calling model")
                         model_call_count += 1
@@ -107,15 +119,7 @@ class NLPModel:
 
 
     def product_question_prime(self, tags: List[str], question: str):
-        """
-        IDEAS TO REDUCE THE NUMBER OF TIMES WE CALL THE MODEL
-
-        1. make contain more strict (maybe a certain percentage has to contain the words?)
-        2. make tags a shorter list - self.MAX_TAG_LENGTH can be shorter
-        3. shouldn't we remove all the html from visited? ie just be left with the text
-        4. make numsearches shorter
         
-        """
         """ get all tags of soup """
         results: Dict[str, int] = {}
         # max_answer represents the answer with the highest confidence
