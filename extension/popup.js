@@ -206,7 +206,7 @@ async function fetchHandler_two(event) {
 
   console.log(data.url + " " + data.macro + " " + data.html)
 
-  fetch('http://127.0.0.1:5000/one_macro_html', {
+  fetch('http://34.116.140.226:5000/one_macro_html', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
