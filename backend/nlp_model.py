@@ -138,7 +138,7 @@ class NLPModel:
         Q: How much do I pay per month?
         A: £7.99
 
-        W: https://www.tesco.com/groceries/en-GB/products/311267977
+        W: https://www.teso.com/groceries/en-GB/products/311267977
         Q: How many calories does this contain?
         A: 6 cal
 
@@ -182,6 +182,11 @@ class NLPModel:
         News sites:
 
         """
+
+        searches_params = [2, 4, 8, 16, 32, 64]
+        tags_params = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+        visits_params = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 
 
     def product_question_prime(self, tags: List[str], question: str):
