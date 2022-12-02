@@ -5,21 +5,33 @@ import re
 class NLPModel:
     """ NLPModel object that uses a question_answerer model """
 
-    def __init__(self, question_answerer):
+    def __init__(self, question_answerer, site_kind):
         """ Initializes a NLPModel object with a model input"""
         self.raker = Rake()
         self.question_answerer = question_answerer
+
         self.MAX_SEARCHES = 32
+        # if site_kind == "news_site":
+        #     self.MAX_SEARCHES = 32
+        # elif site_kind == "supermarket_site":
+        #     self.MAX_SEARCHES = 15
+
+
+        # self.MAX_SEARCHES = 32 #should depend on kind of site
         self.NUM_KEYWORDS = 10
         self.MAX_TAG_LENGTH = 700
         self.MAX_VISITS_PER_TAG = 2
     
 
-    
 
+    #n / m => (n + 1) / (m + 2)
+
+
+    
     def get_keywords(self, question: str, n: int = 1):
         self.raker.extract_keywords_from_text(question)
         return str(self.raker.get_ranked_phrases()[0]).split(" ")[:n]
+
     
 
     def product_question(self, tags: List[str], question: str):
@@ -116,6 +128,58 @@ class NLPModel:
 
         print("Here's the answer:", answer)
         return answer
+
+    def parameter_tuning():
+        """
+        Shopping sites:
+        W: https://www.tesco.com/clubcard/clubcard-plus/?sc_cmp=ref*tdchp*stc*tesco.com*new_homepage_taxonomy&utm_source=tesco.com_homepage&utm_medium=tesco.com&utm_campaign=new_homepage_taxonomy
+        Q: How much do I pay per month?
+        A: £7.99
+
+        W: https://www.tesco.com/groceries/en-GB/products/311267977
+        Q: How many calories does this contain?
+        A: 6 cal
+
+        W: https://www.tesco.com/groceries/en-GB/products/255985687
+        Q: How many slices does this contain?
+        A: 12 slices
+
+        W: https://www.tesco.com/groceries/en-GB/products/299772342
+        Q: Where to use this?
+        A: Toilet
+
+        W: https://www.tesco.com/groceries/en-GB/products/313606076
+        Q: How to recycle?
+        A: Box. Recycle Film. Don't Recycle Tray. Recycle
+
+        W: https://www.tesco.com/groceries/en-GB/products/311261278
+        Q: How far should you hold it?
+        A: 72H
+
+        W: https://www.tesco.com/groceries/en-GB/products/303206081
+        Q: What are dimensions?
+        A: H16cm x W27cm x D29cm
+
+        W: https://www.zara.com/uk/en/vertical-textured-sweatshirt-p06462401.html?v1=229687668&v2=2113165
+        Q: what is the maximum ironing temperature?
+        A: 110C/230F
+
+        W: 
+        Q:
+        A:
+
+        
+        """
+
+        websites = ["https://www.tesco.com/clubcard/clubcard-plus/?sc_cmp=ref*tdchp*stc*tesco.com*new_homepage_taxonomy&utm_source=tesco.com_homepage&utm_medium=tesco.com&utm_campaign=new_homepage_taxonomy",
+                    ]
+        questions = []
+
+
+        """
+        News sites:
+
+        """
 
 
     def product_question_prime(self, tags: List[str], question: str):

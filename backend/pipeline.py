@@ -33,8 +33,10 @@ class Pipeline:
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.url = ""
         self.question = ""
+        self.site_kind = ""
         self.model = NLPModel(pipeline("question-answering",
-                                       model="deepset/roberta-base-squad2"))
+                                       model="deepset/roberta-base-squad2"),
+                                       site_kind = "supermarket_site")
 
     def get_product_urls(self):
         """ Get the urls for the product page """
