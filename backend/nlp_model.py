@@ -176,6 +176,7 @@ class NLPModel:
         websites = ["https://www.tesco.com/clubcard/clubcard-plus/?sc_cmp=ref*tdchp*stc*tesco.com*new_homepage_taxonomy&utm_source=tesco.com_homepage&utm_medium=tesco.com&utm_campaign=new_homepage_taxonomy",
                     ]
         questions = []
+        answers = []
 
 
         """
@@ -186,6 +187,20 @@ class NLPModel:
         searches_params = [2, 4, 8, 16, 32, 64]
         tags_params = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
         visits_params = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+
+        for search in searches_params:
+            for tag in tags_params:
+                for visits in visits_params:
+                    for i in range(len(websites)):
+                        ws = websites[i]
+                        q = questions[i]
+                        a = answers[i]
+                        
+                        # Perform the qna with the model and populate result with it
+                        result = ""
+
+
 
 
 
