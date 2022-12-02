@@ -8,10 +8,13 @@ from transformers import pipeline
 from selenium import webdriver
 #pylint: disable-next=unused-import, import-error
 import chromedriver_binary
+from textblob import Word
 
-from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
-from backend.webscraper import soup
-from backend.nlp_model import NLPModel
+from db_connection import db_product_urls, db_send, db_products_to_keyword
+from webscraper import soup
+from nlp_model import NLPModel
+import time
+
 
 class Pipeline:
     """ Orchestrates the entire flow of data from query to output"""
@@ -31,8 +34,10 @@ class Pipeline:
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         self.url = ""
         self.question = ""
+        self.site_kind = ""
         self.model = NLPModel(pipeline("question-answering",
-                                       model="deepset/roberta-base-squad2"))
+                                       model="deepset/roberta-base-squad2"),
+                                       site_kind = "supermarket_site")
 
     @timed
     def get_product_urls(self):
@@ -74,6 +79,11 @@ class Pipeline:
                 "question": self.question,
                 "products_to_question": products_to_question}
 
+    def spell_check_question(self, question: str):
+        question_words = [word.lower() for word in question.split()]
+        corrected_words = map(lambda w: Word(w).spellcheck()[0][0], question_words)
+        return ' '.join(list(corrected_words))
+
     def main(self, url, keyword):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
@@ -91,21 +101,25 @@ class Pipeline:
         res.pop("_id", None)
         return res
 
+
     @timed
     def one_product_main(self, url, question):
         """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
-        self.question = question
-
-        question_keyword = "fat"
-
+        self.question = self.spell_check_question(question)
+        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+        print("Working on the following url:", self.url)
+        print("For the following query:", self.question, "\n")
         # rudimentary caching for questions
-        cached_result = db_products_to_keyword(self.url, question_keyword)
+        cached_result = db_products_to_keyword(self.url, self.question)
         if cached_result is not None:
+            print("Cache Hit!!")
             return cached_result
+        print("The query, url pair didn't exist in cache, carrying on...")
         product_urls = set()
         product_urls.add(url)
         res: dict = self.products_to_question(product_urls)
+        print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
         db_send(res, "single_result")
         res.pop("_id", None)
         return res
@@ -113,5 +127,5 @@ class Pipeline:
 
 if __name__ == "__main__":
     pipeline = Pipeline()
-    pipeline.one_product_main(sys.argv[1], sys.argv[2])
+    print(pipeline.one_product_main(sys.argv[1], sys.argv[2]))
     # pipeline.main(sys.argv[1], sys.argv[2])
