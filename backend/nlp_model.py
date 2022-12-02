@@ -1,6 +1,7 @@
 from typing import List, Dict
 from rake_nltk import Rake
 import re
+import numpy
 
 from backend.timer import timed
 
@@ -204,6 +205,37 @@ class NLPModel:
                         
         return total_Lev_dist / len(websites)
 
+    
+    def levDist(pred, gold):
+        dists = numpy.zeros((len(pred) + 1, len(gold) + 1))
+
+        for i in range(len(pred) + 1):
+            dists[i][0] = i
+        
+        for j in range(len(gold) + 1):
+            dists[0][j] = j
+
+        x = 0
+        y = 0
+        z = 0
+
+        for i in range(1, len(pred) + 1):
+            for j in range(1, len(gold) + 1):
+                if (pred[i - 1] == gold[j - 1]):
+                    dists[i][j] = dists[i - 1][j - 1]
+                else:
+                    x = dists[i][j - 1]
+                    y = dists[i - 1][j]
+                    z = dists[i - 1][j - 1]
+
+                    if (x <= y and x <= z):
+                        dists[i][j] = x + 1
+                    if (y <= x and y <= z):
+                        dists[i][j] = y + 1
+                    else:
+                        dists[i][j] = z + 1
+    
+        return dists[len(pred)][len(gold)]
 
 
     def product_question_prime(self, tags: List[str], question: str):
