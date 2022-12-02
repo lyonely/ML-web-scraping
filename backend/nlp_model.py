@@ -131,7 +131,7 @@ class NLPModel:
         print("Here's the answer:", answer)
         return answer
 
-    def parameter_tuning():
+    def similarityCheck():
         """
         Shopping sites:
         W: https://www.tesco.com/clubcard/clubcard-plus/?sc_cmp=ref*tdchp*stc*tesco.com*new_homepage_taxonomy&utm_source=tesco.com_homepage&utm_medium=tesco.com&utm_campaign=new_homepage_taxonomy
@@ -188,7 +188,7 @@ class NLPModel:
         tags_params = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
         visits_params = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-
+        total_Lev_dist = 0
         for search in searches_params:
             for tag in tags_params:
                 for visits in visits_params:
@@ -200,7 +200,9 @@ class NLPModel:
                         # Perform the qna with the model and populate result with it
                         result = ""
 
-
+                        total_Lev_dist += levDist(result, a)
+                        
+        return total_Lev_dist / len(websites)
 
 
 
