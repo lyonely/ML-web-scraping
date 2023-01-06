@@ -11,7 +11,8 @@ class NLPModel:
         """ Initializes a NLPModel object with a model input"""
         self.rake = Rake()
         self.max_searches = 32
-        self.model_link = "https://api-inference.huggingface.co/models/deepset/roberta-base-squad2"
+        # pylint: disable-next=line-too-long
+        self.model_link = "https://api-inference.huggingface.co/models/bert-large-uncased-whole-word-masking-finetuned-squad"
 
     def get_keywords(self, question: str, num: int):
         """ Extracts relevant keywords from question """
@@ -69,6 +70,9 @@ class NLPModel:
                         tags_visited[tag] = 1
 
                     result = self.use_model(question, tag)
+
+                    if "answer" not in result:
+                        continue
 
                     if result["answer"] in results:
                         results[result["answer"]] += result["score"] / search * weight
