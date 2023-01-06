@@ -11,6 +11,7 @@ from gensim.models import TfidfModel
 from gensim.similarities import WordEmbeddingSimilarityIndex
 from gensim.similarities import SparseTermSimilarityMatrix
 from gensim.similarities import SoftCosineSimilarity
+from test.semantic_similarity_nico import get_answer_similarity
 
 
 class NLPModel:
@@ -132,6 +133,7 @@ class NLPModel:
         searches_params = [2, 4, 8, 16, 32, 64]
         tags_params = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
         visits_params = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        similarities = []
 
         total_Lev_dist = 0
         for search in searches_params:
@@ -146,8 +148,9 @@ class NLPModel:
                         result = ""
 
                         total_Lev_dist += levDist(result, a)
+                        similarities.append(get_answer_similarity(result, a))
                         
-        return total_Lev_dist / len(websites)
+        return (total_Lev_dist / len(websites), similarities)
 
     
     def levDist(pred, gold):
