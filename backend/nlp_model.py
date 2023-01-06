@@ -1,7 +1,15 @@
 from typing import List, Dict
 from rake_nltk import Rake
 import re
-import numpy
+import numpy as np
+from re import sub
+from gensim.utils import simple_preprocess
+import gensim.downloader as api
+from gensim.corpora import Dictionary
+from gensim.models import TfidfModel
+from gensim.similarities import WordEmbeddingSimilarityIndex
+from gensim.similarities import SparseTermSimilarityMatrix
+from gensim.similarities import SoftCosineSimilarity
 
 from backend.timer import timed
 
@@ -132,7 +140,7 @@ class NLPModel:
         print("Here's the answer:", answer)
         return answer
 
-    def similarityCheck():
+    def distanceCheck():
         """
         Shopping sites:
         W: https://www.tesco.com/clubcard/clubcard-plus/?sc_cmp=ref*tdchp*stc*tesco.com*new_homepage_taxonomy&utm_source=tesco.com_homepage&utm_medium=tesco.com&utm_campaign=new_homepage_taxonomy
@@ -237,6 +245,39 @@ class NLPModel:
     
         return dists[len(pred)][len(gold)]
 
+    stopwords = ['the', 'and', 'are', 'a']
+
+    def preprocess(str):
+        str = sub(r'<img[^<>]+(>|$)', " image_token ", str)
+        str = sub(r'<[^<>]+(>|$)', " ", str)
+        str = sub(r'\[img_assist[^]]*?\]', " ", str)
+        str = sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', " url_token ", str)
+        return [token for token in simple_preprocess(str, min_len=0, max_len=float("inf")) if token not in stopwords]
+
+
+    def similarityCheck(pred, gold):
+        procPred = preprocess(pred)
+        procGold = preprocess(gold)
+
+        glove = api.load("glove-wiki-gigaword-50")    
+        similarity_index = WordEmbeddingSimilarityIndex(glove)
+
+        dictionary = Dictionary(procGold+[procPred])
+        termFreq = TfidfModel(dictionary=dictionary)
+
+        similarity_matrix = SparseTermSimilarityMatrix(similarity_index, dictionary, termFreq)
+
+        query_tf = termFreq[dictionary.doc2bow(procPred)]
+
+        index = SoftCosineSimilarity(
+            termFreq(dictionary.doc2bow(procGold),
+            similarity_matrix))
+
+        similarity_score = index[query_tf]
+
+        return similarity_score
+
+
 
     def product_question_prime(self, tags: List[str], question: str):
         
@@ -281,11 +322,6 @@ class NLPModel:
                                 results[result["answer"]] += score_to_add
                             else:
                                 results[result["answer"]] = score_to_add
-
-        
-
-
-
 
         print("num times called model", model_call_count)
         print(results)
