@@ -1,15 +1,15 @@
-let btn2 = document.createElement("button");
+let button = document.createElement("button");
 
-btn2.innerHTML = "Single Product";
-btn2.style.cssText = "border: 0; outline: 0; cursor: pointer; color: rgb(60, 66, 87);background-color: rgb(255, 255, 255);box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 8%) 0px 2px 5px 0px;border-radius: 4px;font-size: 14px;font-weight: 500;padding: 0px 8px;display: inline-block;min-height: 28px;transition: background-color .24s,box-shadow .24s; margin: 0px 8px;";
+button.innerHTML = "Get your answer!";
+button.style.cssText = "border: 0; outline: 0; cursor: pointer; color: rgb(60, 66, 87);background-color: rgb(255, 255, 255);box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 8%) 0px 2px 5px 0px;border-radius: 4px;font-size: 14px;font-weight: 500;padding: 0px 8px;display: inline-block;min-height: 28px;transition: background-color .24s,box-shadow .24s; margin: 0px 8px;";
 
 const textOutput = document.querySelector("#showOutput");
 
-document.getElementById("divForForm").append(btn2);
+document.getElementById("divForForm").append(button);
 
 var label = "";
 
-btn2.addEventListener("click", fetchHandler_two);
+button.addEventListener("click", fetchHandler_two);
 
 // showing output
 function displayOutput() {
@@ -58,7 +58,7 @@ async function fetchHandler_two(event) {
 
   console.log(data.url + " " + data.macro + " " + data.html)
 
-  fetch('http://localhost:5000/one_macro_html', {
+  fetch('http://34.89.147.237:5000/one_macro_html', {
     method: 'POST',
       mode: 'cors',
       body: JSON.stringify(data),
