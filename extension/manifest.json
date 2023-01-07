@@ -11,6 +11,6 @@
         "service_worker": "background.js"
     },
     "host_permissions": [
-        "http://34.89.147.237:5000/one_macro_html"
+        "<all_urls>"
     ]
 }
