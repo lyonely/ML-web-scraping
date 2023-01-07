@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Scrape.ai",
-    "description": "Base Level Extension",
+    "description": "Enables users to quickly find information from websites",
     "version": "1.0",
     "action": {
         "default_popup": "hello.html",
@@ -11,6 +11,6 @@
         "service_worker": "background.js"
     },
     "host_permissions": [
-        "*://*/*"
+        "http://34.89.147.237:5000/one_macro_html"
     ]
 }
