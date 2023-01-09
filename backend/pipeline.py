@@ -1,14 +1,11 @@
-import sys
 from typing import Set
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
 from selenium import webdriver
 # pylint: disable-next=unused-import, import-error
 import chromedriver_binary
-
-from backend.db_connection import db_product_urls, db_send, db_products_to_keyword
-from backend.webscraper import soup
+from backend.db_connection import *
+from backend.webscraper import soup, soup_without_driver
 from backend.nlp_model import NLPModel
 
 
@@ -33,9 +30,26 @@ class Pipeline:
         self.html = ""
         self.model = NLPModel()
 
+    """ This is for a regular POST Request for multiple products (i.e. in a product grid) """
+    def multiple_products(self, url, question):
+        """ Find the product and its relevant macro information and stores it in a database """
+        self.url = str(url)
+        self.question = question
+
+        cached_result = db_products_to_keyword(self.url, question)
+        if cached_result is not None:
+            return cached_result
+
+        product_urls: set = self.get_product_urls()
+        res: dict = self.multiple_products_answer(product_urls)
+        db_send_results(res)
+        res.pop("_id", None)
+        return res
+
     def get_product_urls(self):
         """ Get the urls for the product page """
         product_urls = db_product_urls(self.url)
+
         # If product_urls don't exist, run through algorithm
         if product_urls is None:
             page = soup(self.driver, self.url)
@@ -49,61 +63,38 @@ class Pipeline:
                 if '/products/' in to_scrape:
                     products.add(to_scrape)
 
-            db_send({"url": self.url, "products": list(products)}, "urls")
-
+            db_send_url({"url": self.url, "products": list(products)})
         else:
             products = product_urls["products"]
+
         return products
 
-    def products_to_question(self, products: Set[str]):
+    def multiple_products_answer(self, products: Set[str]):
         """ Runs the ML pipeline to get macro for products """
-        products_to_question = {}
+        answers: list = []
         while len(products) > 0:
             product = products.pop()
             try:
-                page = soup(self.driver, product)
+                # find the html source of the page if it has already been scraped
+                page = db_product_html_source(product)
+                if page is None:
+                    page = soup(self.driver, product)
+                    db_send_html({"url": product, "html": str(page)})
+                else:
+                    page = soup_without_driver(page["html"])
+
                 tags = [str(tag).strip().lower() for tag in page.find_all()]
-                # alternate = self.model.alternate_algorithm(str(page), self.question)
                 answer = self.model.product_question(tags, str(self.question).strip().lower())
-                products_to_question[product] = answer
+                answers.append((product, answer))
             except (HTTPError, URLError):
                 continue
 
-        return {"search_query": self.url,
+        return {"url": self.url,
                 "question": self.question,
-                "products_to_question": products_to_question}
+                "answer": answers}
 
-    def html_answer(self):
-        """ Uses html code to find relevant information """
-        products_to_question = {}
-
-        tags = BeautifulSoup(self.html, 'html.parser').find_all()
-        tags = [str(tag).strip().lower() for tag in tags]
-
-        answer = self.model.product_question(tags, str(self.question).strip().lower())
-        products_to_question[self.url] = answer
-
-        return {"search_query": self.url,
-                "question": self.question,
-                "products_to_question": products_to_question}
-
-    def multiple_products(self, url, keyword):
-        """ Find the product and its relevant macro information and stores it in a database """
-        self.url = str(url)
-        self.question = keyword
-
-        cached_result = db_products_to_keyword(self.url, keyword, is_multiple=True)
-        if cached_result is not None:
-            return cached_result
-
-        product_urls: set = self.get_product_urls()
-        res: dict = self.products_to_question(product_urls)
-        db_send(res, is_multiple=True)
-        res.pop("_id", None)
-        return res
-
+    """ This is for a regular POST Request for a single product """
     def single_product(self, url, question):
-        """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
         self.question = str(question).strip().lower()
 
@@ -111,30 +102,46 @@ class Pipeline:
         if cached_result is not None:
             return cached_result
 
-        product_urls = set()
-        product_urls.add(url)
-        res: dict = self.products_to_question(product_urls)
-        db_send(res)
+        res: dict = self.single_product_answer(url)
+        db_send_results(res)
         res.pop("_id", None)
         return res
 
+    def single_product_answer(self, product: str):
+        """ Runs the ML pipeline to get macro for a single product """
+        try:
+            page = soup(self.driver, product)
+            tags = [str(tag).strip().lower() for tag in page.find_all()]
+            answer = self.model.product_question(tags, str(self.question).strip().lower())
+            return {"url": self.url,
+                    "question": self.question,
+                    "answer": answer}
+
+        except (HTTPError, URLError):
+            return {}
+
+    """ This is for when the frontend sends the page source in the POST Request """
     def single_product_html(self, url, question, html):
-        """ Find the product and its relevant macro information and stores it in a database """
         self.url = str(url)
         self.question = str(question).strip().lower()
         self.html = str(html).strip()
 
         cached_result = db_products_to_keyword(self.url, question)
         if cached_result is not None:
-            print("Cache Hit!!")
             return cached_result
 
-        res: dict = self.html_answer()
-        db_send(res)
+        res: dict = self.single_product_answer_html()
+        db_send_results(res)
         res.pop("_id", None)
         return res
 
+    def single_product_answer_html(self):
+        """ Uses html code to find relevant information """
+        tags = soup_without_driver(self.html).find_all()
+        tags = [str(tag).strip().lower() for tag in tags]
 
-if __name__ == "__main__":
-    pipeline = Pipeline()
-    pipeline.single_product(sys.argv[1], sys.argv[2])
+        answer = self.model.product_question(tags, str(self.question).strip().lower())
+
+        return {"url": self.url,
+                "question": self.question,
+                "answer": answer}

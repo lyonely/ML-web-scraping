@@ -2,6 +2,7 @@ from typing import List, Dict
 import re
 from rake_nltk import Rake
 import requests
+from transformers import pipeline
 
 
 class NLPModel:
@@ -11,7 +12,8 @@ class NLPModel:
         """ Initializes a NLPModel object with a model input"""
         self.rake = Rake()
         self.max_searches = 32
-        self.model_link = "https://api-inference.huggingface.co/models/deepset/roberta-base-squad2"
+        model_name = "deepset/roberta-base-squad2"
+        self.model_link = pipeline("question-answering", model=model_name)
 
     def get_keywords(self, question: str, num: int):
         """ Extracts relevant keywords from question """
@@ -20,20 +22,6 @@ class NLPModel:
             return str(self.rake.get_ranked_phrases()[0]).split(" ")[:num]
         except IndexError:
             return []
-
-    def use_model(self, question, context):
-        """ Uses huggingface inference api to pass through question and context to roberta model"""
-        result_response = requests.post(self.model_link,
-        headers={"Authorization": "Bearer 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"},
-        json={
-            "inputs": {
-                "question": question,
-                "context": context
-            },
-        },
-        timeout=5)
-
-        return result_response.json()
 
     # pylint: disable-next=too-many-locals, too-many-branches
     def product_question(self, tags: List[str], question: str):
@@ -48,7 +36,7 @@ class NLPModel:
             if search > self.max_searches:
                 break
 
-            contain = len(keywords) == 0
+            contain = int(len(keywords) == 0)
             weight = 0 + int(contain)
             for word in keywords:
                 if word in tag:
@@ -56,6 +44,7 @@ class NLPModel:
                     weight += 0.5
 
             if contain:
+
                 ignore_flag = True
                 for visited, item in tags_visited.items():
                     if visited in tag and item >= 2:
@@ -67,9 +56,9 @@ class NLPModel:
                         tags_visited[tag] += 1
                     else:
                         tags_visited[tag] = 1
+                    result = self.model_link(question, tag)
 
-                    result = self.use_model(question, tag)
-
+                    # result = self.use_model(question, tag)
                     if result["answer"] in results:
                         results[result["answer"]] += result["score"] / search * weight
                     else:
@@ -77,6 +66,7 @@ class NLPModel:
 
                     search += 1
         answer = ""
+
         if results:
             answer = max(results, key=results.get)
 
@@ -88,22 +78,3 @@ class NLPModel:
                 answer = message[0]
 
         return answer
-
-    def alternate_algorithm(self, soup, question):
-        """ Alternative algorithm """
-        found = re.findall(r">([^<]*\S)<", soup)
-        found = [f for f in found if len(f) < 500]
-        results = {}
-        for tag in found:
-
-            result = self.use_model(question, tag)
-
-            if result["answer"] in results:
-                results[result["answer"]] += result["score"]
-            else:
-                results[result["answer"]] = result["score"]
-        print(results)
-        answer = ""
-        if results:
-            answer = max(results, key=results.get)
-        print(answer)
