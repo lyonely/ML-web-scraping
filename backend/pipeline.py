@@ -98,7 +98,7 @@ class Pipeline:
         self.url = str(url)
         self.question = str(question).strip().lower()
 
-        cached_result = db_products_to_keyword(self.url, question)
+        cached_result = db_products_to_keyword(self.url, self.question)
         if cached_result is not None:
             return cached_result
 
@@ -126,7 +126,7 @@ class Pipeline:
         self.question = str(question).strip().lower()
         self.html = str(html).strip()
 
-        cached_result = db_products_to_keyword(self.url, question)
+        cached_result = db_products_to_keyword(self.url, self.question)
         if cached_result is not None:
             return cached_result
 
