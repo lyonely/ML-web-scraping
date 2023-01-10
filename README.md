@@ -34,16 +34,20 @@ Important note: The application only works on **Google Chrome**
 ### Using the Chrome Extension
 
 1. Head to any website that you wish to scrape. Our favourite for the project was [Sharwoods Butter Chicken 420g](https://www.tesco.com/groceries/en-GB/products/277043162)
-2. Think of a question you have about the page i.e. What is the energy?
+2. Think of a question you have about the page i.e. What is the fat?
 3. Input the question into the Chrome Extension.
 
-![Step 4](https://user-images.githubusercontent.com/66782598/211332091-bbfc6183-11cc-47f7-9ced-2b35e69c0730.png)
-4. Click "Get your answer!"
+![Step 4](https://user-images.githubusercontent.com/66782598/211579169-20c39f17-259a-4c74-b219-cb561bc33182.png)
+
+4. Click "Single Product"
+
+![Step 5](https://user-images.githubusercontent.com/66782598/211579195-bedd41a5-39b4-49ba-95e2-8de2e0e744af.png)
+
 5. Wait for the magic to happen...
 
 Your answer will then appear at the bottom!
 
-![Step 5](https://user-images.githubusercontent.com/66782598/211332116-867b9e86-d21f-4df2-9ae3-057ddee51696.png)
+
 
 
 __Now that you have learned how to use **scrape.ai**, feel free to explore other websites!__
