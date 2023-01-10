@@ -1,7 +1,7 @@
 let button = document.createElement("button");
 let button2 = document.createElement("button");
 
-button.innerHTML = "Get your answer!";
+button.innerHTML = "Single Product";
 button.style.cssText = "border: 0; outline: 0; cursor: pointer; color: rgb(60, 66, 87);background-color: rgb(255, 255, 255);box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 12%) 0px 1px 1px 0px, rgb(60 66 87 / 16%) 0px 0px 0px 1px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(60 66 87 / 8%) 0px 2px 5px 0px;border-radius: 4px;font-size: 14px;font-weight: 500;padding: 0px 8px;display: inline-block;min-height: 28px;transition: background-color .24s,box-shadow .24s; margin: 0px 8px;";
 
 button2.innerHTML = "List of Products";
