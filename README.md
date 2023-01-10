@@ -8,6 +8,7 @@ In a nutshell, the user enters a query in the form of a relevant question on the
 
 ## Software Architecture
 ![ML Web Scraping Architecture](https://user-images.githubusercontent.com/66782598/211300982-94b01f7b-9141-45ea-9a4d-2f48284b99cc.jpeg)
+__Currently, the Hugging Face Inference API is down so we are using a GCP-hosted ML model__
 
 ## Instructions
 
