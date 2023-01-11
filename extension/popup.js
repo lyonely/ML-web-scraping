@@ -79,15 +79,9 @@ async function fetchHandler(event) {
         hideLoading()
         console.log(data)
         displayOutput()
-        let d = data["products_to_question"]
+        let d = data["answer"]
         console.log(d)
-        let d1 = JSON.stringify(d)
-        console.log(d1)
-        var result_str = ""
-        for (var key in d) {
-          result_str += String(key) + ": " + String(d[key]) + "\n\n"
-        }
-        textOutput.innerText = result_str
+        textOutput.innerText = d
       })
       .catch(error => console.error('Error:', error));
 
@@ -137,7 +131,7 @@ async function fetchHandler_two(event) {
       hideLoading()
       console.log(data)
       displayOutput()
-      let d = data.products_to_question
+      let d = data["answer"]
       console.log(d)
       let d1 = JSON.stringify(d)
       var result_str = ""
